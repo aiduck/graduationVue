@@ -1,7 +1,7 @@
 <template>
     <el-dialog
         title="请添加信息"
-        :visible.sync = "show"
+        :visible.sync = "visible"
         @close="handleCancel"
         :close-on-click-modal="false"
         center>
@@ -49,7 +49,7 @@ export default {
     },
     watch: {
         show(val) {
-            console.log("筛选框可见状态改变", val);
+            console.log("添加框可见状态改变", val);
             this.visible = val;
         }
     },

@@ -44,6 +44,12 @@ export default new Router({
           meta: { title: '教师基本信息' }
         },
         {
+          // 教师信息
+          path: '/teacherInfo/:userId/:isCheck',
+          component: resolve => require(['../components/page/TeacherInfoDetail.vue'], resolve),
+          meta: { title: '教师详情页' }
+        },
+        {
           // 学生信息
           path: '/studentInfo',
           component: resolve => require(['../components/page/StudentInfo.vue'], resolve),

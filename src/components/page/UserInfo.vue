@@ -57,7 +57,7 @@
                 <el-table-column type="expand">
                     <template slot-scope="props">
                     <el-form label-position="left" inline class="demo-table-expand">
-                        <el-form-item v-for="(value, key) in expandFormatMap" :key='key' :label="value">
+                        <el-form-item v-for="(value, key) in expandFormatMap" :key='key' :label="value" class="expandItem">
                         <span>{{ props.row[key] }}</span>
                         </el-form-item>
                     </el-form>
@@ -443,33 +443,53 @@ export default {
         },
         // 导出
         downloadFile(){
-            axios
-            .get('/api/userInfo/queryUser')
-            .then(res => {
-                if(res.data.code === 200){
-                    this.excelData = res.data.data.userList;
-                            // 表格标题
-                    let data = [{
-                        address: '地址',
-                        email: '邮箱',
-                        status: '用户状态',
-                        telno: '联系方式',
-                        user_id: '用户名',
-                        user_type_name: '用户类型',
-                        username: '用户姓名'
-                    }]
-                    data = data.concat(this.excelData)
-                    // 文件名
-                    this.downloadExl(data, '用户名单')
-                }
-            })
-            .catch(err => {
-                console.log(err);
-                this.$message({
-                    message: `链接发生错误`,
-                    type: 'error'
-                });
-            })
+            // tagEmpty = true 表示没有筛选那么导出数据所有内容
+            // 反之则导出筛选之后的内容
+            if(this.tagEmpty) {
+                axios
+                .get('/api/userInfo/queryUser')
+                .then(res => {
+                    if(res.data.code === 200){
+                        this.excelData = res.data.data.userList;
+                        // 表格标题
+                        let data = [{
+                            address: '地址',
+                            email: '邮箱',
+                            status: '用户状态',
+                            telno: '联系方式',
+                            user_id: '用户名',
+                            user_type_name: '用户类型',
+                            username: '用户姓名'
+                        }]
+                        data = data.concat(this.excelData)
+                        // 文件名
+                        this.downloadExl(data, '用户名单')
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    this.$message({
+                        message: `链接发生错误`,
+                        type: 'error'
+                    });
+                })
+            } else {
+                this.excelData = this.tableData;
+                // 表格标题
+                let data = [{
+                    address: '地址',
+                    email: '邮箱',
+                    status: '用户状态',
+                    telno: '联系方式',
+                    user_id: '用户名',
+                    user_type_name: '用户类型',
+                    username: '用户姓名'
+                }]
+                data = data.concat(this.excelData)
+                // 文件名
+                this.downloadExl(data, '用户名单')
+            }
+            
         },
         // 导出用到的函数
         downloadExl(json, downName, type) {  // 导出到excel
@@ -666,6 +686,13 @@ export default {
     }
     .tag {
         margin: 5px;
+    }
+    .expandItem {
+        padding-right: 40px;
+    }
+    .el-form-item__content span{
+        color: royalblue;
+        font-weight: 600;
     }
 </style>
 
