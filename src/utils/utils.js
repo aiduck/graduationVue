@@ -49,9 +49,42 @@ function getMapValue(jsonStr) {
     jsonToMap(jsonStr)
 }
 
+/**
+ * 数组相减
+ * @param {*原来数组} old 
+ * @param {*要减去的数组} minus 
+ */
+function arrMinus(old,minus) {
+    var oldArr = old;
+    var minusArr = minus;
+    var newArr = [];
+    oldArr.map(Olditem => { 
+        let isRepeat = minusArr.findIndex(minusItem => Olditem === minusItem);
+        if(isRepeat > -1) delete minusArr[isRepeat];
+        else newArr.push(Olditem)
+    });
+    return newArr;
+}
+/**
+ * 清空对象
+ * @param {*原对象} object 
+ */
+function resetObject(object) {
+    let o = object;
+    let r = {}
+    for (var key in o) {
+        console.log(key);
+        r[key] = ''
+    }
+    console.log(r);
+    return r
+}
+
 let utils = {
     formatDate,
     randomId,
     getMapValue,
+    arrMinus,
+    resetObject,
 }
 export default utils

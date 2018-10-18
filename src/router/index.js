@@ -25,6 +25,31 @@ export default new Router({
           component: resolve => require(['../components/page/BaseInfo.vue'], resolve),
           meta: { title: '基础信息' }
         },
+        {
+          // 用户信息
+          path: '/userInfo',
+          component: resolve => require(['../components/page/UserInfo.vue'], resolve),
+          meta: { title: '用户基础信息' },
+        },
+        {
+          // 用户信息详情页
+          path: '/userDetails/:userId/:isCheck',
+          component: resolve => require(['../components/page/UserInfoDetail.vue'], resolve),
+          meta: { title: '用户详情页' }
+        },
+        {
+          // 教师信息
+          path: '/teacherInfo',
+          component: resolve => require(['../components/page/TeacherInfo.vue'], resolve),
+          meta: { title: '教师基本信息' }
+        },
+        {
+          // 学生信息
+          path: '/studentInfo',
+          component: resolve => require(['../components/page/StudentInfo.vue'], resolve),
+          meta: { title: '学生基本信息' }
+        },
+        
       ]
     },
     {

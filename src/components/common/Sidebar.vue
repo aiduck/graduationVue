@@ -1,6 +1,6 @@
 <template>
     <div class="sidebar">
-        <el-menu class="sidebar-el-menu" :default-active="onRoutes" :collapse="collapse" background-color="#324157"
+        <el-menu class="sidebar-el-menu" :default-active="$route.path" :collapse="collapse" background-color="#324157"
             text-color="#bfcbd9" active-text-color="#20a0ff" unique-opened router 
             @select="handleSelect"   @open="handleOpen" @close="handleClose">
             <template v-for="item in items">
@@ -48,13 +48,32 @@
                 items: [
                     {
                         icon: 'el-icon-setting',
-                        index: 'dashboard',
+                        index: '/dashboard',
                         title: '个人中心'
                     },
                     {
                         icon: 'el-icon-tickets',
-                        index: 'basicInfo',
+                        index: '/basicInfo',
                         title: '基础信息',
+                    },
+                     {
+                        icon: 'el-icon-lx-profile',
+                        index: '3',
+                        title: '用户信息',
+                        subs: [
+                            {
+                                index: '/userInfo',
+                                title: '用户基本信息'
+                            },
+                            {
+                                index: '/teacherInfo',
+                                title: '教师基本信息',
+                            },
+                            {
+                                index: '/studentInfo',
+                                title: '学生基本信息'
+                            }
+                        ]
                     },
                 ]
             }
@@ -68,6 +87,7 @@
             // 没用到的回调函数（返回index值）
             handleSelect(key, keyPath) {
                 console.log(key, keyPath);
+                
             },
             handleOpen(key, keyPath) {
                 console.log(key, keyPath);

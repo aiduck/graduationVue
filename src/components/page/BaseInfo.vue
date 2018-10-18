@@ -121,7 +121,6 @@
     // 引入xlsx
     var XLSX = require('xlsx');
     import axios from '../../utils/axiosHttp.js';
-    import { Message } from 'element-ui';
     export default {
         name: 'baseinfo',
         data() {
