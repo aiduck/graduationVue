@@ -307,13 +307,22 @@ export default {
                     type: 'warning'
                 }).then(() => {
                     let userIdList = [];
+                    let teacherList = [];
+                    let studentList = [];
                     this.multipleSelection.map((item, index) => {
                         userIdList.push(item.user_id);
+                        if(item.user_type_name === '教师') {
+                            teacherList.push(item.user_id);
+                        } else if(item.user_type_name === '学生') {
+                            studentList.push(item.user_id);
+                        }
                     })
-                    console.log(userIdList);
                     let params = {
-                        userList: userIdList
+                        userList: userIdList,
+                        teacherList: teacherList,
+                        studentList: studentList
                     }
+                    console.log(params)
                     axios
                     .post('api/userInfo/daleteUserList', params)
                     .then(res => {
@@ -397,13 +406,12 @@ export default {
             .post("/api/userInfo/insertUserList",data)
             .then(res => {
                 if (res.data.code == 200) {
-                    let userData = res.data.data;
+                    console.log(res)
                     this.initUserInfo(this.pageSize, this.currentPage);
                     this.$message({
-                        message: `成功插入${userData.affectedRows}条信息,重复插入${userData.changedRows}条信息`,
+                        message: `成功插入信息`,
                         type: 'success'
                     });
-                    
                 }
             })
             .catch(err => {

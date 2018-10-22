@@ -125,12 +125,12 @@ export default {
                 // 格式化标签映射表
                 username: "用户姓名",
                 telno: "联系方式",
-                user_type_name: "用户类别",
+                address: "详细地址",
                 status: "用户状态"
             },
             expandFormatMap: {
                 // 格式化额外信息映射表
-                address: "详细地址",
+                // user_type_name: "用户类别",  
                 email: "邮箱",
                 sex: '性别',
                 job_title: '职称',
@@ -405,10 +405,9 @@ export default {
             .post("/api/teacherInfo/insertUserList",data)
             .then(res => {
                 if (res.data.code == 200) {
-                    let teacherdata = res.data.teacherdata;
                     this.initUserInfo(this.pageSize, this.currentPage);
                     this.$message({
-                        message: `成功插入${teacherdata.affectedRows}条信息,重复插入${teacherdata.changedRows}条信息`,
+                        message: `成功插入信息`,
                         type: 'success'
                     });
                 }
