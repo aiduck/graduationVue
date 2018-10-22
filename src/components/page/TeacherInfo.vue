@@ -241,9 +241,9 @@ export default {
                 username: [
                     { required: true, message: "请输入用户姓名", trigger: "blur" }
                 ],
-                user_type_name: [
-                    { required: true, message: "请选择用户类型", trigger: "blur"}
-                ],
+                // user_type_name: [
+                //     { required: true, message: "请选择用户类型", trigger: "blur"}
+                // ],
                 status: [
                     { required: true, message: "请选择用户状态", trigger: "blur" }
                 ],

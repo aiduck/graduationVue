@@ -2,7 +2,7 @@
     <div class="wrap">
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 用户基本信息/教师详细信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 用户基本信息/学生详细信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container formCon">
@@ -65,22 +65,10 @@
                     </el-row>
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="职称">
-                                <el-input v-model="userForm.job_title" :disabled="ischeck"></el-input>
-                            </el-form-item>
-                        </el-col>
-                        <el-col :span="12">
-                            <el-form-item label="学历">
-                                <el-input v-model="userForm.education" :disabled="ischeck"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="12">
-                            <el-form-item label="性别">
-                                <el-select v-model="userForm.sex" placeholder="请选择用户性别" :disabled="ischeck">
-                                    <el-option label="男" value="男"></el-option>
-                                    <el-option label="女" value="女"></el-option>
+                            <el-form-item label="行政班级">
+                                <el-select v-model="userForm.aclass_id" placeholder="请选择行政班级" :disabled="ischeck">
+                                    <el-option label="测试一" value="测试一"></el-option>
+                                    <el-option label="测试二" value="测试二"></el-option>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -111,9 +99,7 @@ export default {
                 address: '',
                 user_type_name: '',
                 status: '可用',
-                sex: '性别',
-                job_title: '职称',
-                education: '学历'
+                aclass_id: '',
             },
             ischeck: false,
         }
@@ -136,7 +122,7 @@ export default {
                 user_id: this.$route.params.userId
             }
             axios
-            .post('/api/teacherInfo/queryUserById',params)
+            .post('/api/studentInfo/queryUserById',params)
             .then(res => {
                 if(res.data.code === 200) {
                     console.log(res);
@@ -160,9 +146,7 @@ export default {
                 address, 
                 user_type_name, 
                 user_id,
-                sex,
-                job_title,
-                education
+                aclass_id
             } = this.userForm;
             let params = {
                 userForm: {
@@ -172,14 +156,12 @@ export default {
                     address, 
                     user_type_name, 
                     user_id,
-                    sex,
-                    job_title,
-                    education
+                    aclass_id
                 }
             }
             console.log(params);
             axios
-            .post('/api/teacherInfo/updateUserInfo',params)
+            .post('/api/studentInfo/updateUserInfo',params)
             .then(res => {
                 if(res.data.code === 200) {
                     this.$message({

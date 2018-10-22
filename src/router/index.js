@@ -55,7 +55,12 @@ export default new Router({
           component: resolve => require(['../components/page/StudentInfo.vue'], resolve),
           meta: { title: '学生基本信息' }
         },
-        
+        {
+          // 学生信息
+          path: '/studentInfo/:userId/:isCheck',
+          component: resolve => require(['../components/page/StudentInfoDetail.vue'], resolve),
+          meta: { title: '学生详情页' }
+        },
       ]
     },
     {
