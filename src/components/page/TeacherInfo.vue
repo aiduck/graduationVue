@@ -609,7 +609,9 @@ export default {
             if (filter !== undefined) {
                 this.filter = filter;
                 let params = {
-                    filter
+                    filter,
+                    pageSize:this.pageSize,
+                    currentPage:this.currentPage
                 }
                 axios
                 .post('/api/teacherInfo/queryByFilter', params)
@@ -623,7 +625,16 @@ export default {
                         type: 'error'
                     });
                 })
-            } 
+            }  else {
+                let  filter = {
+                    //搜索条件
+                    user_id: "", // 用户名
+                    username: "", //用户姓名
+                    status: "", //用户状态
+                    sex: "", // 用户性别
+                }
+                this.filter = filter;
+            }
             this.showFilterBox = false;
         },
         // 标签的key格式化器

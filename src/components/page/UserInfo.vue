@@ -602,7 +602,9 @@ export default {
             if (filter !== undefined) {
                 this.filter = filter;
                 let params = {
-                    filter
+                    filter,
+                    pageSize:this.pageSize,
+                    currentPage:this.currentPage
                 }
                 axios
                 .post('/api/userInfo/queryByFilter', params)
@@ -616,7 +618,15 @@ export default {
                         type: 'error'
                     });
                 })
-            } 
+            }  else {
+                let  filter = {
+                    user_id: "", // 用户名
+                    username: "", //用户姓名
+                    user_type_name: "", //用户类别
+                    status: "", //用户状态
+                }
+                this.filter = filter;
+            }
             this.showFilterBox = false;
         },
         // 标签的key格式化器

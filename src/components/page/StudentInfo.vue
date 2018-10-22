@@ -2,7 +2,7 @@
     <div class="wrap">
          <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 教师基本信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 学生基本信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <!-- 表格 -->
@@ -41,11 +41,12 @@
                 @handleClear="inputClear"/>
             <!-- 添加框 -->
             <add-box :show="showInfoAdd"
-                    :tmpl = "infoAddTmpl"
-                    :valueLabelMap = "valueLabelMap"
-                    :rules = "infoAddRules"
-                    @sendInfo = "receiveInfo"
-            ></add-box>
+                    :tmpl="infoAddTmpl"
+                    :valueLabelMap="valueLabelMap"
+                    :rules="infoAddRules"
+                    @sendInfo="receiveInfo"
+                    @inputChange="inputChange"
+                    @handleClear="inputClear"/>
             <!-- 表格 -->
             <el-table 
                 :data="tableData" 
@@ -132,6 +133,8 @@ export default {
                 // 格式化额外信息映射表
                 // user_type_name: "用户类别",  
                 email: "邮箱",
+                college_id:"学院",
+                major_id:"专业",
                 aclass_id: '行政班级',  // 这个地方应该是一个下拉框（信息由行政班级信息决定）
             },
             hideMap: {
@@ -145,6 +148,8 @@ export default {
             // 筛选表格参数
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
+            isMjorSelect: false,
+            isAdclassSelect: false,
             valueLabelMap:{
                 status: [
                     {
@@ -156,16 +161,9 @@ export default {
                         label: "不可用"
                     }
                 ],
-                aclass_id: [
-                    {
-                        value: "测试1班",
-                        label: "测试1班"
-                    },
-                    {
-                        value: "测试2班",
-                        label: "测试2班"
-                    }
-                ]
+                college_id: [],
+                major_id: [],
+                aclass_id: []
             },
             filterTmpl: {
                 user_id: {
@@ -180,9 +178,19 @@ export default {
                     label: "用户状态",
                     inputType: 1 // 1 代表下拉框
                 },
+                college_id: {
+                    label: "学院",
+                    inputType: 1 // 1 代表下拉框
+                },
+                major_id: {
+                    label: "专业",
+                    inputType: 1, // 1 代表下拉框
+                    disabled: true,
+                },
                 aclass_id: {
                     label: "行政班级",
-                    inputType: 1 // 1 代表下拉框
+                    inputType: 1, // 1 代表下拉框
+                    disabled: true,
                 }
             },
             filter: {
@@ -190,6 +198,8 @@ export default {
                 user_id: "", // 用户名
                 username: "", //用户姓名
                 status: "", //用户状态
+                college_id: "", // 用户学院
+                major_id: "", // 用户专业
                 aclass_id: "", // 用户行政班级
             },
             // 添加表格参数
@@ -219,9 +229,19 @@ export default {
                     label: "用户状态",
                     inputType: 1 // 1 代表下拉框
                 },
+                college_id: {
+                    label: "学院",
+                    inputType: 1 // 1 代表下拉框
+                },
+                major_id: {
+                    label: "专业",
+                    inputType: 1 ,// 1 代表下拉框
+                    disabled: true,
+                },
                 aclass_id: {
                     label:'行政班级',
-                    inputType: 1 // 1 代表下拉框
+                    inputType: 1 ,// 1 代表下拉框
+                    disabled: true,
                 },
             },
             infoAddRules: {
@@ -233,10 +253,7 @@ export default {
                 ],
                 status: [
                     { required: true, message: "请选择用户状态", trigger: "blur" }
-                ],
-                aclass_id: [
-                    { required: true, message: "请选择用户性别", trigger: "blur" }
-                ],
+                ]
             }
         }
     },
@@ -269,8 +286,80 @@ export default {
         this.imFile = document.getElementById('imFile');
         this.outFile = document.getElementById('downlink')
         this.initUserInfo(this.pageSize, this.currentPage);
+        this.initCollege();
     },
     methods: {
+        // mysql中获取数据初始化信息接口
+        initCollege() {
+            axios
+            .get('/api/basicInfo/queryCollege')
+            .then(res => {
+                if(res.data.code === 200){
+                    // this.valueLabelMap.college_id = res.data.data;
+                    res.data.data.map((item) => {
+                        this.valueLabelMap.college_id.push({
+                            value: item.college_id,
+                            label: item.college_id
+                        })
+                    })
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        initMajor(college) {
+            let collegeId = {
+                collegeId: college
+            };
+            axios
+            .post('/api/basicInfo/queryMajor',collegeId)
+            .then(res => {
+                if(res.data.code === 200){
+                    res.data.data.map((item) => {
+                        this.valueLabelMap.major_id.push({
+                            value: item.major_id,
+                            label: item.major_id
+                        })
+                    })
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        initAdclass(major) {
+            let majorId = {
+                majorId: major
+            };
+            axios
+            .post('/api/basicInfo/queryAdClass',majorId)
+            .then(res => {
+                if(res.data.code === 200){
+                    res.data.data.map((item) => {
+                        this.valueLabelMap.aclass_id.push({
+                            value: item.aclass_id,
+                            label: item.aclass_id
+                        })
+                    })
+                }
+            })
+            .catch(err => {
+                console.log(err)
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
         // 初始化用户信息
         initUserInfo(pageSize, currentPage) {
             let params = {
@@ -306,14 +395,12 @@ export default {
                     this.multipleSelection.map((item, index) => {
                         userIdList.push(item.user_id);
                     })
-                    console.log(userIdList);
                     let params = {
                         userList: userIdList
                     }
                     axios
                     .post('api/studentInfo/daleteUserList', params)
                     .then(res => {
-                        console.log(res);
                         if(res.data.code === 200) {
                             this.initUserInfo(this.pageSize, this.currentPage);
                             this.$message({
@@ -388,7 +475,6 @@ export default {
         },
         // 批量导入用户信息接口
         insertUserInfo(data) {
-            console.log(data);
             axios
             .post("/api/studentInfo/insertUserList",data)
             .then(res => {
@@ -420,6 +506,8 @@ export default {
                     address: item.地址,
                     user_type_name: item.用户类型,
                     status: item.用户状态,
+                    college_id: item.学院,
+                    major_id: item.专业,
                     aclass_id: item.行政班级,
                 }
                 insertData.push(tableItem);
@@ -455,6 +543,8 @@ export default {
                             user_id: '用户名',
                             user_type_name: '用户类型',
                             username: '用户姓名',
+                            college_id: '专业',
+                            major_id: '学院',
                             aclass_id: '行政班级',
                         }]
                         data = data.concat(this.excelData)
@@ -480,6 +570,8 @@ export default {
                     user_id: '用户名',
                     user_type_name: '用户类型',
                     username: '用户姓名',
+                    college_id: '专业',
+                    major_id: '学院',
                     aclass_id: '行政班级',
                 }]
                 data = data.concat(this.excelData)
@@ -548,6 +640,11 @@ export default {
         // 单个添加按钮
         handleAdd() {
             this.showInfoAdd = true;
+            this.filterTmpl.major_id.disabled = true;
+            this.filterTmpl.aclass_id.disabled = true;
+            
+            this.infoAddTmpl.major_id.disabled = true;
+            this.infoAddTmpl.aclass_id.disabled = true;        
         },
         receiveInfo(addform) {
             this.showInfoAdd = false;
@@ -555,7 +652,6 @@ export default {
                 axios
                 .post('/api/studentInfo/insertUserList', addform)
                 .then(res => {
-                    console.log(res);
                     if(res.data.code === 200) {
                         this.$message({
                             message: `添加成功`,
@@ -576,14 +672,21 @@ export default {
         },
         // 搜索按钮相关函数
         enterFilter() {
+            this.filterTmpl.major_id.disabled = true;
+            this.filterTmpl.aclass_id.disabled = true;
+            
+            this.infoAddTmpl.major_id.disabled = true;
+            this.infoAddTmpl.aclass_id.disabled = true;
+             
+           
             if(this.isFilterIng) {
-                console.log('退出筛选');
+                // console.log('退出筛选');
                 this.filter = util.resetObject(this.filter);
                 // 就是没有任何条件的所有信息
                  this.initUserInfo(this.pageSize, this.currentPage);
             }
             else {
-                console.log('进入筛选');
+                // console.log('进入筛选');
                 this.showFilterBox = true;
             }
         },
@@ -591,7 +694,9 @@ export default {
             if (filter !== undefined) {
                 this.filter = filter;
                 let params = {
-                    filter
+                    filter,
+                    pageSize:this.pageSize,
+                    currentPage:this.currentPage
                 }
                 axios
                 .post('/api/studentInfo/queryByFilter', params)
@@ -605,7 +710,18 @@ export default {
                         type: 'error'
                     });
                 })
-            } 
+            } else {
+                let  filter = {
+                    //搜索条件
+                    user_id: "", // 用户名
+                    username: "", //用户姓名
+                    status: "", //用户状态
+                    college_id: "", // 用户学院
+                    major_id: "", // 用户专业
+                    aclass_id: "", // 用户行政班级
+                }
+                this.filter = filter;
+            }
             this.showFilterBox = false;
         },
         // 标签的key格式化器
@@ -616,11 +732,38 @@ export default {
         },
         async inputChange(oldObj, newObj) {
             // 筛选框中下拉框handleSelectChange改变
-            console.log(oldObj,newObj);
+            // console.log(oldObj,newObj);
+            const value = arguments[0];
+            const type = arguments[1].label;
+            this.valueLabelMap.major_id = [];
+            this.valueLabelMap.aclass_id = [];
+            switch (type) {
+                case "学院":
+                    this.initMajor(value);
+                    this.filterTmpl.major_id.disabled = false;
+                    this.infoAddTmpl.major_id.disabled = false;
+                    break;
+                case "专业":
+                    this.initAdclass(value);
+                    this.filterTmpl.aclass_id.disabled = false;
+                    this.infoAddTmpl.aclass_id.disabled = false;
+                    break;
+                break;
+            }
         },
         inputClear(type) {
             // 筛选框中下拉框handleClear清除
-            console.log(type);
+            // console.log(type);
+            if (type == "学院") {
+                this.filterTmpl.major_id.disabled = true;
+                this.filterTmpl.aclass_id.disabled = true;
+                
+                this.infoAddTmpl.major_id.disabled = true;
+                this.infoAddTmpl.aclass_id.disabled = true;
+            } else if (type == "专业") {
+                this.filterTmpl.aclass_id.disabled = true;
+                this.infoAddTmpl.aclass_id.disabled = true;
+            }
         },
         // 批量删除按钮
         handleSelectionChange(val) {
@@ -660,7 +803,6 @@ export default {
         },
         // 分页操作按钮
         handleCurrentChange(val) {
-            console.log(`当前页: ${val}`);
             let currentPage = val;
             this.initUserInfo(this.pageSize, currentPage);
         },

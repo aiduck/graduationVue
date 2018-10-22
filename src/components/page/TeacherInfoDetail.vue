@@ -120,7 +120,6 @@ export default {
     },
     mounted() {
         this.ischeck = this.$route.params.isCheck === 'ischeck' ? true :false;
-        console.log(this.$route.params.isCheck);
         this.initUserInfo();
     },
     watch:{
@@ -139,7 +138,6 @@ export default {
             .post('/api/teacherInfo/queryUserById',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    console.log(res);
                     let user = res.data.data.user[0];
                     this.userForm = user;
                 }
@@ -177,7 +175,6 @@ export default {
                     education
                 }
             }
-            console.log(params);
             axios
             .post('/api/teacherInfo/updateUserInfo',params)
             .then(res => {
@@ -197,7 +194,7 @@ export default {
         },
         // 去修改界面
         leaveFor() {
-            this.$router.push(`/teacherInfo/${row.user_id}/isedit`);
+            this.$router.push(`/teacherInfo/${this.$route.params.userId}/isedit`);
         },
         // 重置密码
         resetPwd() {

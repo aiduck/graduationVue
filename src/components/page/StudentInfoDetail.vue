@@ -65,10 +65,49 @@
                     </el-row>
                     <el-row>
                         <el-col :span="12">
+                            <el-form-item label="学院">
+                                <el-select v-model="userForm.college_id" 
+                                placeholder="请选择学院" 
+                                :disabled="ischeck"
+                                @change="handleSelectChange(userForm.college_id,'college')"
+                                @clear="handleClear('college')">
+                                    <el-option v-for="item in college"
+                                        :key = "item.college_id"
+                                        :label = "item.college_id"
+                                        :value = "item.college_id">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="专业">
+                                <el-select v-model="userForm.major_id" 
+                                placeholder="请选择专业" 
+                                :disabled="isMajorSelect || ischeck"
+                                @change="handleSelectChange(userForm.major_id,'major')"
+                                @clear="handleClear('major')">
+                                    <el-option v-for="item in major"
+                                        :key = "item.major_id"
+                                        :label = "item.major_id"
+                                        :value = "item.major_id">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="12">
                             <el-form-item label="行政班级">
-                                <el-select v-model="userForm.aclass_id" placeholder="请选择行政班级" :disabled="ischeck">
-                                    <el-option label="测试一" value="测试一"></el-option>
-                                    <el-option label="测试二" value="测试二"></el-option>
+                                <el-select v-model="userForm.aclass_id" 
+                                placeholder="请选择行政班级" 
+                                :disabled="isAdclassSelect || ischeck"
+                                @change="handleSelectChange(userForm.aclass_id,'adclass')"
+                                @clear="handleClear('adclass')">
+                                    <el-option v-for="item in adclass"
+                                        :key = "item.aclass_id"
+                                        :label = "item.aclass_id"
+                                        :value = "item.aclass_id">
+                                    </el-option>
                                 </el-select>
                             </el-form-item>
                         </el-col>
@@ -99,15 +138,22 @@ export default {
                 address: '',
                 user_type_name: '',
                 status: '可用',
-                aclass_id: '',
+                college_id: '', // 用户学院
+                major_id: '', // 用户专业
+                aclass_id: '', // 用户行政班级
             },
+            college: [],
+            major:[],
+            adclass:[],
+            isMajorSelect: true,
+            isAdclassSelect: true,
             ischeck: false,
         }
     },
     mounted() {
         this.ischeck = this.$route.params.isCheck === 'ischeck' ? true :false;
-        console.log(this.$route.params.isCheck);
         this.initUserInfo();
+        this.initCollege();
     },
     watch:{
         // 监听路由变化
@@ -116,6 +162,81 @@ export default {
         }
     },
     methods: {
+        // mysql中获取数据初始化信息接口
+        initCollege() {
+            axios
+            .get('/api/basicInfo/queryCollege')
+            .then(res => {
+                if(res.data.code === 200){
+                    this.college = res.data.data;
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        initMajor(college) {
+            let collegeId = {
+                collegeId: college
+            };
+            axios
+            .post('/api/basicInfo/queryMajor',collegeId)
+            .then(res => {
+                if(res.data.code === 200){
+                    this.major = res.data.data;
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        initAdclass(major) {
+            let majorId = {
+                majorId: major
+            };
+            axios
+            .post('/api/basicInfo/queryAdClass',majorId)
+            .then(res => {
+                if(res.data.code === 200){
+                    this.adclass = res.data.data;
+                }
+            })
+            .catch(err => {
+                console.log(err)
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        handleSelectChange(value,type){
+            switch (type) {
+                case "college":
+                    this.initMajor(value);
+                    this.isMajorSelect = false;
+                    break;
+                case "major":
+                    this.initAdclass(value);
+                    this.isAdclassSelect = false;
+                    break;
+                break;
+            }
+        },
+        handleClear(type) {
+            if (type == "college") {
+                this.isMajorSelect = true;
+            } else if (type == "major") {
+                this.isAdclassSelect = true;
+            }
+        },
         // 初始化用户信息
         initUserInfo() {
             let params = {
@@ -125,7 +246,6 @@ export default {
             .post('/api/studentInfo/queryUserById',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    console.log(res);
                     let user = res.data.data.user[0];
                     this.userForm = user;
                 }
@@ -145,8 +265,10 @@ export default {
                 telno, 
                 address, 
                 user_type_name, 
+                college_id, // 用户学院
+                major_id, // 用户专业
+                aclass_id,
                 user_id,
-                aclass_id
             } = this.userForm;
             let params = {
                 userForm: {
@@ -156,10 +278,11 @@ export default {
                     address, 
                     user_type_name, 
                     user_id,
-                    aclass_id
+                    aclass_id,
+                    college_id, // 用户学院
+                    major_id, // 用户专业
                 }
             }
-            console.log(params);
             axios
             .post('/api/studentInfo/updateUserInfo',params)
             .then(res => {
@@ -179,7 +302,7 @@ export default {
         },
         // 去修改界面
         leaveFor() {
-            this.$router.push(`/teacherInfo/${row.user_id}/isedit`);
+            this.$router.push(`/studentInfo/${this.$route.params.userId}/isedit`);
         },
         // 重置密码
         resetPwd() {

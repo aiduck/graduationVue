@@ -17,8 +17,11 @@
                         <el-select
                             v-if="value.inputType === 1"
                             v-model="addForm[key]"
+                            :disabled="value.disabled"
                             clearable
-                            :placeholder="placeholderFilter(value.inputType, value.label)">
+                            :placeholder="placeholderFilter(value.inputType, value.label)"
+                            @change="handleSelectChange(addForm[key], value)"
+                            @clear="handleClear(value)">
                                 <el-option 
                                     v-for="item in valueLabelMap[key]"
                                     :key = "item.value"
@@ -40,10 +43,17 @@
 
 <script>
 export default {
-    props: ["show","rules","tmpl","valueLabelMap"],
+    props: [
+        "show",
+        "rules",
+        "tmpl",
+        "valueLabelMap"
+    ],
     data() {
         return {
-            addForm: {},
+            addForm: {
+                
+            },
             visible: this.show,
         }
     },
@@ -87,6 +97,14 @@ export default {
             str = str + label;
             return str;
         },
+        handleSelectChange() {
+            console.log("下拉选择框内容改变change");
+            this.$emit("inputChange", arguments[0], arguments[1]);
+        },
+        handleClear(res) {
+            console.log("下拉选择框内容清除clear");
+            this.$emit("inputClear", res.label);
+        }
     }
 }
 </script>

@@ -522,7 +522,6 @@
                 axios
                 .post('/api/basicInfo/updateStatus',data)
                 .then(res => {
-                    console.log(res);
                     if(res.data.code === 200){
                         if(data.type === 'major') {
                             this.initMajor(data.item);
@@ -597,10 +596,8 @@
                     this.initMajor(collegeObj,'select');
                     // 需要改
                     this.majorSelect = false;
-                    console.log('处理专业input的事件');
                 } else if(type === 'major' && this.form.major !== undefined) {
                     this.adclassSelect = false;
-                    console.log('处理班级input的事件');
                 }
             },
             // 添加接口
@@ -608,7 +605,6 @@
                 axios
                 .post('/api/basicInfo/addBasicInfo',data)
                 .then(res => {
-                    console.log(res);
                     if(res.data.code === 200) {
                         this.$message({
                             message: '添加成功',

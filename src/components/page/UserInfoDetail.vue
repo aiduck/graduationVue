@@ -95,7 +95,6 @@ export default {
     },
     mounted() {
         this.ischeck = this.$route.params.isCheck === 'ischeck' ? true :false;
-        console.log(this.$route.params.isCheck);
         this.initUserInfo();
     },
     watch:{
@@ -114,7 +113,6 @@ export default {
             .post('/api/userInfo/queryUserById',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    console.log(res);
                     let user = res.data.data.user[0];
                     this.userForm = user;
                 }
@@ -147,7 +145,6 @@ export default {
                     user_id
                 }
             }
-            console.log(params);
             axios
             .post('/api/userInfo/updateUserInfo',params)
             .then(res => {

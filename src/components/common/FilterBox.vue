@@ -74,7 +74,6 @@ export default {
             this.visible = false;
         },
         handleDetermine() {
-            console.log('确认筛选条件，掉用后端接口');
             this.$emit("sendFilter", this.filter);
             this.visible = false;  
         },
@@ -89,7 +88,6 @@ export default {
     },
     watch: {
         dialogVisible(val) {
-            console.log("筛选框可见状态改变", val);
             this.visible = val;
         }
     }
