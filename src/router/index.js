@@ -61,6 +61,12 @@ export default new Router({
           component: resolve => require(['../components/page/StudentInfoDetail.vue'], resolve),
           meta: { title: '学生详情页' }
         },
+        {
+          // 课程管理
+          path: '/courseInfo',
+          component: resolve => require(['../components/page/CourseInfo.vue'], resolve),
+          meta: { title: '课程管理' }
+        },
       ]
     },
     {

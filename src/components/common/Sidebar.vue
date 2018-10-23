@@ -56,7 +56,7 @@
                         index: '/basicInfo',
                         title: '基础信息',
                     },
-                     {
+                    {
                         icon: 'el-icon-lx-profile',
                         index: '3',
                         title: '用户信息',
@@ -74,6 +74,11 @@
                                 title: '学生基本信息'
                             }
                         ]
+                    },
+                    {
+                        icon: 'el-icon-lx-read',
+                        index: '/courseInfo',
+                        title: '课程信息',
                     },
                 ]
             }

@@ -7,7 +7,7 @@
         </div>
         <div class="container">
             <div class="plugins-tips base-tip">
-                当前选择专业：{{msg}}
+                当前选择班级：{{msg}}
             </div>
             <el-row class="box" type="flex" justify="space-between">
                 <el-col :span="8" class="box-item">
@@ -28,10 +28,10 @@
                     </el-row>
                     <transition-group tag="div" id="college" class="item-ul">
                         <!-- <div v-if="college.length <=0 " class="item-error">没有学院信息</div>  -->
-                        <div v-for="(item,index) in college" class="list" :key="index" @click="handleItemClick(item, 'college', index)">
+                        <div v-for="(item,index) in college" class="list" :key="index" @click="handleItemClick(item, 'college')">
                             {{item.college_id}}
-                            <el-button v-if="item.status == '可用'" plain type="danger" class="list-del" @click="handleUsed('college','不可用', item)">禁用</el-button>
-                            <el-button v-else plain type="primary" class="list-del" @click="handleUsed('college','可用',item)">启用</el-button>
+                            <el-button v-if="item.status == '可用'" plain type="danger" class="list-del" @click="handleUsed('college','不可用', item,$event)">禁用</el-button>
+                            <el-button v-else plain type="primary" class="list-del" @click="handleUsed('college','可用',item,$event)">启用</el-button>
                         </div>
                     </transition-group>
                 </el-col>
@@ -47,10 +47,10 @@
                         </el-col>
                     </el-row>
                     <transition-group tag="div" id="doing" class="item-ul">
-                        <div v-for="(item,index) in major" class="list" :key="index" @click="handleItemClick(item, 'major', index)">
+                        <div v-for="(item,index) in major" class="list" :key="index" @click="handleItemClick(item, 'major')">
                             {{item.major_id}}
-                            <el-button v-if="item.status == '可用'" plain type="danger" class="list-del" @click="handleUsed('major','不可用', item)">禁用</el-button>
-                            <el-button v-else plain type="primary" class="list-del" @click="handleUsed('major','可用', item)">启用</el-button>
+                            <el-button v-if="item.status == '可用'" plain type="danger" class="list-del" @click="handleUsed('major','不可用', item,$event)">禁用</el-button>
+                            <el-button v-else plain type="primary" class="list-del" @click="handleUsed('major','可用', item,$event)">启用</el-button>
                         </div>
                     </transition-group>
                 </el-col>
@@ -151,27 +151,126 @@
                 adclassSelect: true,
             }
         },
+        mounted() {
+            this.imFile = document.getElementById('imFile')
+            // this.outFile = document.getElementById('downlink')
+            this.initCollege(null,'init');
+            // console.log(this.$router.currentRoute.fullPath);
+        },
         methods: {
             // 点击item的选中事件
-            handleItemClick(item, type, index) {
-                if(type === 'college'){
-                    this.initMajor(item);
-                    this.initMsg(index,0)
-                } else if(type === 'major') {
+            handleItemClick(item, type) {
+                if(type === 'major') {
                     this.initAdclass(item);
-                    this.initMsg(0,index);
+                } else if(type === 'college') {
+                    this.initMajor(item);
                 }
             },
+            // 改变专业状态接口（提前要请求接口，在判断是否可以改变这个专业的状态
+            updateMajorStatue(data) {    
+                let majorObj = {
+                    item: data.item
+                }
+                axios
+                .post('/api/basicInfo/queryBefupSta',majorObj)
+                .then(res => {
+                    if(res.data.code === 200 && res.data.data === '可用' ){
+                        this.updateStatue(data);
+                    } else {
+                        this.$message({
+                            message: `检查该专业属于的学院的状态`,
+                            type: 'error'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.log(err)
+                    this.$message({
+                        message: `链接发生错误`,
+                        type: 'error'
+                    });
+                })
+            },
+            // 改变学院状态接口
+            updateStatue(data) {
+                axios
+                .post('/api/basicInfo/updateStatus',data)
+                .then(res => {
+                    if(res.data.code === 200){
+                        if(data.type === 'major') {
+                            this.initMajor(data.item,'statusBtn');
+                        } else if(data.type === 'college') {
+                            this.initCollege(data.item);
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.log(err)
+                    this.$message({
+                        message: `链接发生错误`,
+                        type: 'error'
+                    });
+                })
+            },
+            // 禁用启用按钮（不用前端改变，是为了msg的内容的更新
+            handleUsed(type, status, item,event) {
+                // 阻止父元素到div的点击事件的启动
+                event.stopPropagation();
+                let data = {
+                    type: type,
+                    status: status,
+                    item: item
+                }
+                if(type === 'major') {
+                    this.updateMajorStatue(data);
+                } else if(type === 'college') {
+                    this.updateStatue(data);
+                }
+            },
+            // 删除按钮
+            handleDel(item, index) {
+                let data = {
+                    adclassObj: item
+                }
+                axios
+                .post('/api/basicInfo/delAdClass',data)
+                .then(res => {
+                    if(res.data.code === 200){
+                        // 前端删除
+                        this.adclass.splice(index, 1);
+                    }
+                })
+                .catch(err => {
+                    console.log(err)
+                    this.$message({
+                        message: `链接发生错误`,
+                        type: 'error'
+                    });
+                })
+            },
             // mysql中获取数据初始化信息接口
-            initCollege() {
+            initCollege(item,from) {
                 axios
                 .get('/api/basicInfo/queryCollege')
                 .then(res => {
                     if(res.data.code === 200){
                         this.college = res.data.data;
-                        if(this.college[0] !== null) {
-                            this.initMajor(this.college[0]);
+                        if(res.data.data.length > 0) {
+                            if(this.college[0] !== undefined && from === 'init') {
+                                this.initMajor(this.college[0], 'init');
+                            } else {
+                                this.initMajor(item);
+                            }
+                        } else {
+                            this.college = [];
+                            this.major = [];
+                            this.adclass = [];
+                            this.$message({
+                                message: `学院查询数据为空`,
+                                type: 'warning'
+                            });
                         }
+                        
                     }
                 })
                 .catch(err => {
@@ -190,16 +289,32 @@
                 .post('/api/basicInfo/queryMajor',collegeId)
                 .then(res => {
                     if(res.data.code === 200){
-                        // 是否是下拉框中要更新信息
-                        if(from === 'select') {
-                            this.selectMajorList = res.data.data;
+                        if(res.data.data.length > 0) {
+                            // console.log(res.data.data);
+                            // 是否是下拉框中要更新信息
+                            if(from === 'select') {
+                                this.selectMajorList = res.data.data;
+                            } else if(from === 'init'){
+                                this.major = res.data.data;
+                            } else if(from === 'statusBtn') {
+                                this.major = res.data.data;
+                                this.initAdclass(college);
+                            } else {
+                                this.major = res.data.data;
+                                this.initAdclass(this.major[0]);
+                            }
+                            // 是否调用班级信息的接口
+                            if(this.major[0] !== undefined && from === 'init') {
+                                this.initAdclass(this.major[0], 'init');
+                            }
                         } else {
-                            this.major = res.data.data;
-                        }
-
-                        if(this.major[0] !== null) {
-                            this.initAdclass(this.major[0], 'init');
-                        }
+                            this.major = [];
+                            this.adclass = [];
+                            this.$message({
+                                message: `专业查询数据为空`,
+                                type: 'warning'
+                            });
+                        } 
                     }
                 })
                 .catch(err => {
@@ -218,11 +333,22 @@
                 .post('/api/basicInfo/queryAdClass',majorId)
                 .then(res => {
                     if(res.data.code === 200){
-                        this.adclass = res.data.data;
-                        // 是否初始化时要更新
-                        if(from === 'init') {
-                            this.initMsg(0,0);
+                        if(res.data.data.length > 0) {
+                            if(from === 'init') {
+                                this.adclass = res.data.data;
+                                this.initMsg(0,0,0);
+                            } else {
+                                this.adclass = res.data.data;
+                                this.infoMsg(major.college_id,major.major_id,0);
+                            } 
+                        } else {
+                            this.adclass = [];
+                            this.$message({
+                                message: `班级查询数据为空`,
+                                type: 'warning'
+                            });
                         }
+                        
                     }
                 })
                 .catch(err => {
@@ -233,8 +359,11 @@
                     });
                 })
             },
-            initMsg(collegeIndex, majorIndex) {
-                this.msg = `${this.college[collegeIndex].college_id}|${this.major[majorIndex].major_id}`
+            initMsg(collegeIndex, majorIndex,adclassIndex) {
+                this.msg = `${this.college[collegeIndex].college_id}|${this.major[majorIndex].major_id}|${this.adclass[adclassIndex].aclass_id}`
+            },
+            infoMsg(college, major,adclassIndex) {
+                this.msg = `${college}|${major}|${this.adclass[adclassIndex].aclass_id}`
             },
             // 导入
             uploadFile(type) {
@@ -338,6 +467,7 @@
                         if(data.length === majorData.warningCount) {
                             this.$message.error('不要重复插入');
                         } else if(majorData.warningCount !== 0 && data.length !== majorData.warningCount) {
+                            // 这边就是外键的约束，如果存在错误就是插入的专业对应的学院信息不存在
                             this.$message({
                                 message: `有${majorData.warningCount}条数据错误，请检查是否存在学院信息错误`,
                                 type: 'warning'
@@ -367,6 +497,7 @@
                         if(data.length === adclassData.warningCount) {
                             this.$message.error('不要重复插入');
                         } else if(adclassData.warningCount !== 0 && data.length !== adclassData.warningCount) {
+                            // 这边就是外键的约束，如果存在错误就是插入的班级对应的专业信息不存在
                             this.$message({
                                 message: `有${adclassData.warningCount}条数据错误，请检查是否存在专业信息错误`,
                                 type: 'warning'
@@ -415,7 +546,6 @@
                         });
                     });
                 }
-                
                 // 初始化imFile的value值
                 // 初始化进度为false
                 this.imFile.value = ''
@@ -427,12 +557,13 @@
                     //最后就是将数据存入后端
                     if(this.isCollegeUpload) {
                         this.insertCollege(dataCollege);
-                        this.initCollege();
                     } else if(this.isMajorUpload){
                         this.insertMajor(dataMajor);
                     } else if(this.isAdclassUpload) {
                         this.insertAdclass(dataAdclass);
                     }
+                    // 导入信息之后，都进行一次初始化
+                    this.initCollege(null,'init');
                 }
             },
             // 导出用到的函数（去除）
@@ -492,86 +623,6 @@
                 }
                 return buf
             },
-            // 改变专业状态接口
-            updateMajorStatue(data) {    
-                let majorObj = {
-                    item: data.item
-                }
-                axios
-                .post('/api/basicInfo/queryBefupSta',majorObj)
-                .then(res => {
-                    if(res.data.code === 200 && res.data.data === '可用' ){
-                        this.updateStatue(data);
-                    } else {
-                        this.$message({
-                            message: `检查该专业属于的学院的状态`,
-                            type: 'error'
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.log(err)
-                    this.$message({
-                        message: `链接发生错误`,
-                        type: 'error'
-                    });
-                })
-            },
-            // 改变学院状态接口
-            updateStatue(data) {
-                axios
-                .post('/api/basicInfo/updateStatus',data)
-                .then(res => {
-                    if(res.data.code === 200){
-                        if(data.type === 'major') {
-                            this.initMajor(data.item);
-                        } else if(data.type === 'college') {
-                            this.initCollege();
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.log(err)
-                    this.$message({
-                        message: `链接发生错误`,
-                        type: 'error'
-                    });
-                })
-            },
-            //  禁用启用按钮
-            handleUsed(type, status, item) {
-                let data = {
-                    type: type,
-                    status: status,
-                    item: item
-                }
-                if(type === 'major') {
-                    this.updateMajorStatue(data);
-                } else if(type === 'college') {
-                    this.updateStatue(data);
-                }
-            },
-            // 删除按钮
-            handleDel(item, index) {
-                let data = {
-                    adclassObj: item
-                }
-                axios
-                .post('/api/basicInfo/delAdClass',data)
-                .then(res => {
-                    if(res.data.code === 200){
-                        // 前端删除
-                        this.adclass.splice(index, 1);
-                    }
-                })
-                .catch(err => {
-                    console.log(err)
-                    this.$message({
-                        message: `链接发生错误`,
-                        type: 'error'
-                    });
-                })
-            },
             // 添加按钮(弹出dialog对话框)
             handleAdd(type) {
                 // 初始化信息
@@ -611,7 +662,6 @@
                             type: 'success'
                         });
                         this.dialogFormVisible = false;
-                        // this.initCollege();
                     }
                 })
                 .catch(err => {
@@ -656,12 +706,7 @@
         watch: {
            
         },
-        mounted() {
-            this.imFile = document.getElementById('imFile')
-            // this.outFile = document.getElementById('downlink')
-            this.initCollege();
-            // console.log(this.$router.currentRoute.fullPath);
-        }
+       
     }
 
 </script>

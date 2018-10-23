@@ -8,9 +8,9 @@
                 <!-- 过渡动画transition -->
                 <transition name="move" mode="out-in">
                     <!-- include是用来绑定tagList中存在的路由，按需加载的意思 -->
-                    <keep-alive :include="tagsList">
+                    <!-- <keep-alive :include="tagsList"> -->
                         <router-view></router-view>
-                    </keep-alive>
+                    <!-- </keep-alive> -->
                 </transition>
             </div>
         </div>
