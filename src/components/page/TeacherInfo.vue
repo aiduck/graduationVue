@@ -145,6 +145,7 @@ export default {
             start: 1, //查询的页码
             totalCount: 0, //返回的记录总数
             // 筛选表格参数
+            isFirstFilter: true,
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
             valueLabelMap:{
@@ -594,6 +595,7 @@ export default {
         },
         // 搜索按钮相关函数
         enterFilter() {
+            this.isFirstFilter = true;
             if(this.isFilterIng) {
                 console.log('退出筛选');
                 this.filter = util.resetObject(this.filter);
@@ -605,27 +607,31 @@ export default {
                 this.showFilterBox = true;
             }
         },
+        filterData(params) {
+            axios
+            .post('/api/teacherInfo/queryByFilter', params)
+            .then(res => {
+                this.tableData = res.data.data.userList;
+                this.totalCount = res.data.data.total;
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
         receiveFilter(filter) {
-            if (filter !== undefined) {
+            if (this.isFirstFilter && filter !== undefined) {
                 this.filter = filter;
                 let params = {
                     filter,
                     pageSize:this.pageSize,
                     currentPage:this.currentPage
                 }
-                axios
-                .post('/api/teacherInfo/queryByFilter', params)
-                .then(res => {
-                    this.tableData = res.data.data.userList;
-                })
-                .catch(err => {
-                    console.log(err);
-                    this.$message({
-                        message: `链接发生错误`,
-                        type: 'error'
-                    });
-                })
-            }  else {
+                this.filterData(params);
+            } else if (this.isFirstFilter && filter === undefined) {
                 let  filter = {
                     //搜索条件
                     user_id: "", // 用户名
@@ -635,6 +641,7 @@ export default {
                 }
                 this.filter = filter;
             }
+            this.isFirstFilter = false;
             this.showFilterBox = false;
         },
         // 标签的key格式化器
@@ -691,7 +698,16 @@ export default {
         handleCurrentChange(val) {
             console.log(`当前页: ${val}`);
             let currentPage = val;
-            this.initUserInfo(this.pageSize, currentPage);
+            if(this.tagEmpty) {
+                this.initUserInfo(this.pageSize, currentPage);
+            } else {
+                let params = {
+                    filter: this.filter,
+                    pageSize:this.pageSize,
+                    currentPage: currentPage
+                }
+                this.filterData(params);
+            }
         },
         handleSizeChange(val) {
             console.log(`每页 ${val} 条`);

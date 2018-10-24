@@ -24,9 +24,10 @@
                             @change="handleSelectChange(filter[key], value)"
                             @clear="handleClear(value)">
                             <el-option v-for="item in valueLabelMap[key]"
-                                :key = "item.value"
-                                :label = "item.label"
-                                :value = "item.value">
+                                :key="item.value"
+                                :label="item.label"
+                                :value="item.value"
+                                :disabled="item.disabled">
                             </el-option>
                         </el-select>
                     </el-form-item>

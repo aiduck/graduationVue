@@ -146,6 +146,7 @@ export default {
             start: 1, //查询的页码
             totalCount: 0, //返回的记录总数
             // 筛选表格参数
+            isFirstFilter: true,
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
             isMjorSelect: false,
@@ -299,7 +300,8 @@ export default {
                     res.data.data.map((item) => {
                         this.valueLabelMap.college_id.push({
                             value: item.college_id,
-                            label: item.college_id
+                            label: item.college_id,
+                            disabled: item.status === '可用'?false:true
                         })
                     })
                 }
@@ -323,7 +325,8 @@ export default {
                     res.data.data.map((item) => {
                         this.valueLabelMap.major_id.push({
                             value: item.major_id,
-                            label: item.major_id
+                            label: item.major_id,
+                            disabled: item.status === '可用'?false:true
                         })
                     })
                 }
@@ -534,6 +537,7 @@ export default {
                 .then(res => {
                     if(res.data.code === 200){
                         this.excelData = res.data.data.userList;
+                        console.log(this.excelData);
                         // 表格标题
                         let data = [{
                             address: '地址',
@@ -672,6 +676,7 @@ export default {
         },
         // 搜索按钮相关函数
         enterFilter() {
+            this.isFirstFilter = true;
             this.filterTmpl.major_id.disabled = true;
             this.filterTmpl.aclass_id.disabled = true;
             
@@ -690,27 +695,31 @@ export default {
                 this.showFilterBox = true;
             }
         },
+        filterData(params) {
+            axios
+            .post('/api/studentInfo/queryByFilter', params)
+            .then(res => {
+                this.tableData = res.data.data.userList;
+                this.totalCount = res.data.data.total;
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
         receiveFilter(filter) {
-            if (filter !== undefined) {
+            if (this.isFirstFilter && filter !== undefined) {
                 this.filter = filter;
                 let params = {
                     filter,
                     pageSize:this.pageSize,
                     currentPage:this.currentPage
                 }
-                axios
-                .post('/api/studentInfo/queryByFilter', params)
-                .then(res => {
-                    this.tableData = res.data.data.userList;
-                })
-                .catch(err => {
-                    console.log(err);
-                    this.$message({
-                        message: `链接发生错误`,
-                        type: 'error'
-                    });
-                })
-            } else {
+                this.filterData(params);
+            } else if (this.isFirstFilter && filter === undefined) {
                 let  filter = {
                     //搜索条件
                     user_id: "", // 用户名
@@ -722,6 +731,7 @@ export default {
                 }
                 this.filter = filter;
             }
+            this.isFirstFilter = false;
             this.showFilterBox = false;
         },
         // 标签的key格式化器
@@ -804,7 +814,16 @@ export default {
         // 分页操作按钮
         handleCurrentChange(val) {
             let currentPage = val;
-            this.initUserInfo(this.pageSize, currentPage);
+            if(this.tagEmpty) {
+                this.initUserInfo(this.pageSize, currentPage);
+            } else {
+                let params = {
+                    filter: this.filter,
+                    pageSize:this.pageSize,
+                    currentPage: currentPage
+                }
+                this.filterData(params);
+            }
         },
         handleSizeChange(val) {
             console.log(`每页 ${val} 条`);
