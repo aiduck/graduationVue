@@ -116,6 +116,7 @@ export default {
     data() {
         return {
             fullscreenLoading: false, // 加载进度条
+            isExitEmpty: false,
             imFile: '', // 导入文件el
             excelData: [],  // 下载信息
             tableData: [],  // 表格数据信息
@@ -407,12 +408,22 @@ export default {
             .post("/api/userInfo/insertUserList",data)
             .then(res => {
                 if (res.data.code == 200) {
-                    console.log(res)
+                    // console.log(res)
+                    let user = res.data.data.data;
+                    // console.log(user);
                     this.initUserInfo(this.pageSize, this.currentPage);
-                    this.$message({
-                        message: `成功插入信息`,
-                        type: 'success'
-                    });
+                    if(user.warningCount !== 0) {
+                        // 这边就是外键的约束，如果存在错误就是插入的专业对应的学院信息不存在
+                        this.$message({
+                            message: `有${user.warningCount}条数据错误，请检查是否存在用户信息错误`,
+                            type: 'warning'
+                        });
+                    } else if(user.warningCount === 0) {
+                        this.$message({
+                            message: `成功插入${user.affectedRows}条信息`,
+                            type: 'success'
+                        });
+                    }
                 }
             })
             .catch(err => {
@@ -426,17 +437,22 @@ export default {
             // 处理导入的数据内容
             var insertData = [];
             data.map((item, index) => {
-                let tableItem = {
-                    user_id: item.用户名,
-                    username: item.用户姓名,
-                    password: item.密码,
-                    email: item.邮箱,
-                    telno: item.电话,
-                    address: item.地址,
-                    user_type_name: item.用户类型,
-                    status: item.用户状态
+                if(item.用户名 === undefined || item.用户姓名 === undefined || item.用户类型 === undefined) {
+                    this.isExitEmpty = true;
+                } else {
+                    let tableItem = {
+                        user_id: item.用户名,
+                        username: item.用户姓名,
+                        password: item.密码,
+                        email: item.邮箱,
+                        telno: item.电话,
+                        address: item.地址,
+                        user_type_name: item.用户类型,
+                        status: item.用户状态
+                    }
+                    insertData.push(tableItem);
                 }
-                insertData.push(tableItem);
+                
             });
             // 初始化imFile的value值
             // 初始化进度为false
@@ -447,7 +463,16 @@ export default {
                 this.errorMsg = '请导入正确信息'
             } else {
                 //最后就是将数据存入后端
-                this.insertUserInfo(insertData);
+                if(this.isExitEmpty) {
+                    this.$alert('导入的信息有存在空值的情况，请检查excel表格', 'excel空值', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+                            this.isExitEmpty = false;
+                        }
+                    });
+                } else {
+                   this.insertUserInfo(insertData);
+                }
             }
         },
         // 导出

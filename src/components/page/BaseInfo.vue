@@ -27,8 +27,8 @@
                         </el-col>
                     </el-row>
                     <transition-group tag="div" id="college" class="item-ul">
-                        <!-- <div v-if="college.length <=0 " class="item-error">没有学院信息</div>  -->
-                        <div v-for="(item,index) in college" class="list" :key="index" @click="handleItemClick(item, 'college')">
+                        <div v-if="college.length <= 0" :key="-1">数据为空</div>
+                        <div v-else v-for="(item,index) in college" class="list" :key="index" @click="handleItemClick(item, 'college')">
                             {{item.college_id}}
                             <el-button v-if="item.status == '可用'" plain type="danger" class="list-del" @click="handleUsed('college','不可用', item,$event)">禁用</el-button>
                             <el-button v-else plain type="primary" class="list-del" @click="handleUsed('college','可用',item,$event)">启用</el-button>
@@ -47,7 +47,8 @@
                         </el-col>
                     </el-row>
                     <transition-group tag="div" id="doing" class="item-ul">
-                        <div v-for="(item,index) in major" class="list" :key="index" @click="handleItemClick(item, 'major')">
+                        <div v-if="major.length <= 0" :key="-1">数据为空</div>
+                        <div v-else v-for="(item,index) in major" class="list" :key="index" @click="handleItemClick(item, 'major')">
                             {{item.major_id}}
                             <el-button v-if="item.status == '可用'" plain type="danger" class="list-del" @click="handleUsed('major','不可用', item,$event)">禁用</el-button>
                             <el-button v-else plain type="primary" class="list-del" @click="handleUsed('major','可用', item,$event)">启用</el-button>
@@ -66,7 +67,8 @@
                         </el-col>
                     </el-row>
                     <transition-group tag="div" id="done" class="item-ul">
-                        <div v-for="(item,index) in adclass" class="list" :key="index">
+                        <div v-if="adclass.length <= 0" :key="-1">数据为空</div>
+                        <div v-else v-for="(item,index) in adclass" class="list" :key="index">
                             {{item.aclass_id}}
                             <el-button plain type="danger" class="list-del" @click="handleDel(item, index)">删除</el-button>
                         </div>
@@ -110,7 +112,7 @@
                 </el-form>
                 <div slot="footer" class="dialog-footer">
                     <el-button @click="handleCancel">取 消</el-button>
-                    <el-button type="primary" @click="handleAffirm">确 定</el-button>
+                    <el-button type="primary" @click="handleAffirm" :disabled="isLastInput">确 定</el-button>
                 </div>
             </el-dialog>
         </div>
@@ -126,6 +128,7 @@
         data() {
             return {
                 msg: '',
+                isExitEmpty: false,
                 college: [], // 学院信息
                 major: [],   // 专业信息
                 selectMajorList: [], // 下拉框中的专业信息
@@ -146,9 +149,25 @@
                 },
                 formLabelWidth: '120px',
                 addModel: 'college',
+                isLastInput: true,
                 // 添加对话框中的下拉框
                 majorSelect: true,
                 adclassSelect: true,
+            }
+        },
+        watch: {
+            // 确认添加按钮是否可以显示
+            form: {
+                handler: function(val) {
+                   if(this.addModel === 'college') {
+                       this.isLastInput = val.college !== '' ? false : true;
+                   } else if(this.addModel === 'major') {
+                       this.isLastInput = val.major !== '' ? false : true;
+                   } else if(this.addModel === 'adclass') {
+                       this.isLastInput = val.adclass !== '' ? false : true;
+                   }
+                },
+                deep: true
             }
         },
         mounted() {
@@ -265,10 +284,10 @@
                             this.college = [];
                             this.major = [];
                             this.adclass = [];
-                            this.$message({
-                                message: `学院查询数据为空`,
-                                type: 'warning'
-                            });
+                            // this.$message({
+                            //     message: `学院查询数据为空`,
+                            //     type: 'warning'
+                            // });
                         }
                         
                     }
@@ -310,10 +329,10 @@
                         } else {
                             this.major = [];
                             this.adclass = [];
-                            this.$message({
-                                message: `专业查询数据为空`,
-                                type: 'warning'
-                            });
+                            // this.$message({
+                            //     message: `专业查询数据为空`,
+                            //     type: 'warning'
+                            // });
                         } 
                     }
                 })
@@ -343,10 +362,10 @@
                             } 
                         } else {
                             this.adclass = [];
-                            this.$message({
-                                message: `班级查询数据为空`,
-                                type: 'warning'
-                            });
+                            // this.$message({
+                            //     message: `班级查询数据为空`,
+                            //     type: 'warning'
+                            // });
                         }
                         
                     }
@@ -444,10 +463,20 @@
                 .then(res => {
                     if (res.data.code == 200) {
                         let collegeData = res.data.data;
-                        this.$message({
-                            message: `成功插入${collegeData.affectedRows}条信息,重复插入${collegeData.changedRows}条信息`,
-                            type: 'success'
-                        });
+                        // 导入信息之后，都进行一次初始化
+                        this.initCollege(null,'init');
+                       if(collegeData.warningCount !== 0) {
+                            // 这边就是外键的约束，如果存在错误就是插入的专业对应的学院信息不存在
+                            this.$message({
+                                message: `有${collegeData.warningCount}条数据错误，请检查是否存在学院信息错误`,
+                                type: 'warning'
+                            });
+                        } else if(collegeData.warningCount === 0) {
+                            this.$message({
+                                message: `成功插入${collegeData.affectedRows}条信息`,
+                                type: 'success'
+                            });
+                        }
                     }
                 })
                 .catch(err => {
@@ -462,11 +491,12 @@
                 axios
                 .post("/api/basicInfo/insertMajor",data)
                 .then(res => {
+                    console.log(res);
                     if (res.data.code === 200) {
                         let majorData = res.data.data;
-                        if(data.length === majorData.warningCount) {
-                            this.$message.error('不要重复插入');
-                        } else if(majorData.warningCount !== 0 && data.length !== majorData.warningCount) {
+                        // 导入信息之后，都进行一次初始化
+                        this.initCollege(null,'init');
+                        if(majorData.warningCount !== 0) {
                             // 这边就是外键的约束，如果存在错误就是插入的专业对应的学院信息不存在
                             this.$message({
                                 message: `有${majorData.warningCount}条数据错误，请检查是否存在学院信息错误`,
@@ -494,9 +524,9 @@
                 .then(res => {
                     if (res.data.code == 200) {
                         let adclassData = res.data.data;
-                        if(data.length === adclassData.warningCount) {
-                            this.$message.error('不要重复插入');
-                        } else if(adclassData.warningCount !== 0 && data.length !== adclassData.warningCount) {
+                        // 导入信息之后，都进行一次初始化
+                        this.initCollege(null,'init');
+                       if(adclassData.warningCount !== 0) {
                             // 这边就是外键的约束，如果存在错误就是插入的班级对应的专业信息不存在
                             this.$message({
                                 message: `有${adclassData.warningCount}条数据错误，请检查是否存在专业信息错误`,
@@ -525,25 +555,38 @@
                 // 处理导入的数据内容
                 if(this.isCollegeUpload) {
                     data.map((item, index) => {
-                        dataCollege.push({
-                            college_id: item.学院,
-                            status: item.学院状态
-                        });
+                        if(item.学院 === undefined) {
+                            this.isExitEmpty = true
+                        } else {
+                            dataCollege.push({
+                                college_id: item.学院,
+                                status: item.学院状态
+                            });
+                        }
                     });
                 }else if(this.isMajorUpload) {
                     data.map((item, index) => {
-                        dataMajor.push({
-                            major_id: item.专业,
-                            college_id: item.学院,
-                            status: item.专业状态
-                        });
+                        if(item.专业 === undefined || item.学院 === undefined) {
+                            this.isExitEmpty = true
+                        } else {
+                            dataMajor.push({
+                                major_id: item.专业,
+                                college_id: item.学院,
+                                status: item.专业状态
+                            });
+                        }
+                       
                     });
                 }else  if(this.isAdclassUpload) {
                     data.map((item, index) => {
-                        dataAdclass.push({
-                            aclass_id: item.班级,
-                            major_id: item.专业,
-                        });
+                        if(item.专业 === undefined || item.班级 === undefined) {
+                            this.isExitEmpty = true
+                        } else {
+                            dataAdclass.push({
+                                aclass_id: item.班级,
+                                major_id: item.专业,
+                            });
+                        }
                     });
                 }
                 // 初始化imFile的value值
@@ -555,15 +598,22 @@
                     this.errorMsg = '请导入正确信息'
                 } else {
                     //最后就是将数据存入后端
-                    if(this.isCollegeUpload) {
-                        this.insertCollege(dataCollege);
-                    } else if(this.isMajorUpload){
-                        this.insertMajor(dataMajor);
-                    } else if(this.isAdclassUpload) {
-                        this.insertAdclass(dataAdclass);
+                    if(this.isExitEmpty) {
+                        this.$alert('导入的信息有存在空值的情况，请检查excel表格', 'excel空值', {
+                            confirmButtonText: '确定',
+                            callback: action => {
+                                this.isExitEmpty = false;
+                            }
+                        });
+                    } else {
+                        if(this.isCollegeUpload) {
+                            this.insertCollege(dataCollege);
+                        } else if(this.isMajorUpload){
+                            this.insertMajor(dataMajor);
+                        } else if(this.isAdclassUpload) {
+                            this.insertAdclass(dataAdclass);
+                        }
                     }
-                    // 导入信息之后，都进行一次初始化
-                    this.initCollege(null,'init');
                 }
             },
             // 导出用到的函数（去除）
@@ -703,9 +753,7 @@
                 this.dialogFormVisible = false;
             }
         },
-        watch: {
-           
-        },
+
        
     }
 

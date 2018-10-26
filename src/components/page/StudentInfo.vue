@@ -117,6 +117,7 @@ export default {
     data() {
         return {
             fullscreenLoading: false, // 加载进度条
+            isExitEmpty: false,
             imFile: '', // 导入文件el
             excelData: [],  // 下载信息
             tableData: [],  // 表格数据信息
@@ -500,20 +501,24 @@ export default {
             // 处理导入的数据内容
             var insertData = [];
             data.map((item, index) => {
-                let tableItem = {
+                if(item.用户名 === undefined || item.用户姓名 === undefined) {
+                    this.isExitEmpty = true;
+                } else {
+                    let tableItem = {
                     user_id: item.用户名,
                     username: item.用户姓名,
                     password: item.密码,
                     email: item.邮箱,
                     telno: item.电话,
                     address: item.地址,
-                    user_type_name: item.用户类型,
+                    // user_type_name: item.用户类型,
                     status: item.用户状态,
                     college_id: item.学院,
                     major_id: item.专业,
                     aclass_id: item.行政班级,
                 }
                 insertData.push(tableItem);
+                }
             });
             // 初始化imFile的value值
             // 初始化进度为false
@@ -524,7 +529,16 @@ export default {
                 this.errorMsg = '请导入正确信息'
             } else {
                 //最后就是将数据存入后端
-                this.insertUserInfo(insertData);
+                if(this.isExitEmpty) {
+                    this.$alert('导入的信息有存在空值的情况，请检查excel表格', 'excel空值', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+                            this.isExitEmpty = false;
+                        }
+                    });
+                } else {
+                    this.insertUserInfo(insertData);
+                }
             }
         },
         // 导出
