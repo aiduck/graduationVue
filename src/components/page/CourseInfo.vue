@@ -133,6 +133,7 @@ export default {
             },
             expandFormatMap: {
                 // 格式化额外信息映射表
+                grade: "年级",
                 hours: "学时",
                 college_id: "学院",
                 ratio_usual:"平时成绩",
@@ -153,12 +154,12 @@ export default {
             valueLabelMap:{
                 term: [
                     {
-                        value: "上",
-                        label: "上"
+                        value: "第1学期",
+                        label: "第1学期"
                     },
                     {
-                        value: "下",
-                        label: "下"
+                        value: "第2学期",
+                        label: "第2学期"
                     }
                 ],
                 college_id: [],
@@ -183,13 +184,21 @@ export default {
                     label: "课程名称",
                     inputType: 0 // 0 代表 input
                 },
-                year: {
-                    label: "学年",
+                yearStart: {
+                    label: "开始学年",
+                    inputType: 2
+                },
+                yearEnd: {
+                    label: "结束学年",
                     inputType: 2
                 },
                 term: {
                     label: "学期",
                     inputType: 1 // 1 代表下拉框
+                },
+                grade: {
+                    label: "年级",
+                    inputType: 3
                 },
                 college_id: {
                     label: "学院",
@@ -210,13 +219,13 @@ export default {
                 course_id: "", 
                 course_name: "", 
                 year: "", 
-                term: "", 
+                term: "",
+                grade: "", // 年级
                 college_id: "", 
                 major_id: "", 
                 status: "", 
             },
             // 添加表格参数
-            isFirstAdd: true,
             showInfoAdd: false,
             infoAddTmpl: {
                 course_id: {
@@ -227,13 +236,21 @@ export default {
                     label: "课程名称",
                     inputType: 0 // 0 代表 input
                 },
-                year: {
-                    label: "学年",
+                yearStart: {
+                    label: "开始学年",
+                    inputType: 2
+                },
+                yearEnd: {
+                    label: "结束学年",
                     inputType: 2
                 },
                 term: {
                     label: "学期",
                     inputType: 1 // 1 代表下拉框
+                },
+                grade: {
+                    label: "年级",
+                    inputType: 3
                 },
                 hours: {
                     label: "学时",
@@ -294,7 +311,8 @@ export default {
                 }
             },
             deep: true
-        }
+        },
+
     },
     mounted() {
         this.imFile = document.getElementById('imFile');
@@ -420,17 +438,24 @@ export default {
         },
         // 单个添加按钮
         handleAdd() {
-            this.isFirstAdd = true;
             this.showInfoAdd = true;
         },
-        receiveInfo(addform) {
-            // console.log(addform);
-            if(this.isFirstAdd) {
-                let hoursNum = parseFloat(addform.hours);
-                let ratio_usualNum = parseFloat(addform.ratio_usual);
-                let ratio_projectNum = parseFloat(addform.ratio_project);
-                this.isFirstAdd = false;
+        receiveInfo(form) {
+            // console.log(form);
+            this.showInfoAdd = false;
+            if(form) {
+                let hoursNum = parseFloat(form.hours);
+                let ratio_usualNum = parseFloat(form.ratio_usual);
+                let ratio_projectNum = parseFloat(form.ratio_project);
                 if(hoursNum%1 === 0 && ratio_usualNum+ratio_projectNum === 1) {
+                    let year = form.yearStart + '-' + form.yearEnd;
+                    delete form['yearStart'];
+                    delete form['yearEnd'];
+                    let addform = {
+                        ...form,
+                        year
+                    }
+                    // console.log(addform);
                     if (addform !== undefined) {
                         axios
                         .post("/api/courseInfo/insterCourse",addform)
@@ -459,7 +484,6 @@ export default {
                     });
                 }
             }
-            this.showFilterBox = false;
         },
         // 搜索按钮相关函数
         enterFilter() {
@@ -491,6 +515,7 @@ export default {
             })
         },
         receiveFilter(filter) {
+            // console.log(filter);
             if (this.isFirstFilter && filter !== undefined) {
                 this.filter = filter;
                 let params = {
@@ -508,6 +533,7 @@ export default {
                     college_id: "", 
                     major_id: "", 
                     status: "", 
+                    grade: "", // 年级
                 }
                 this.filter = filter;
             }

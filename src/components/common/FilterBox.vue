@@ -40,6 +40,14 @@
                             placeholder="选择年"
                             clearable>
                         </el-date-picker>
+                        <el-autocomplete
+                            class="inline-input"
+                            v-if="value.inputType === 3"
+                            v-model="filter[key]"
+                            :fetch-suggestions="querySearch"
+                            placeholder="请输入内容"
+                            @select="handleSelect"
+                        ></el-autocomplete>
                     </el-form-item>
                 </el-col>
             </el-row>
@@ -64,7 +72,31 @@ export default {
             visible: this.dialogVisible,
         }
     },
+    mounted() {
+      this.restaurants = this.loadAll();
+    },
     methods: {
+        querySearch(queryString, cb) {
+            var restaurants = this.restaurants;
+            var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants;
+            // 调用 callback 返回建议列表的数据
+            cb(results);
+        },
+        createFilter(queryString) {
+            return (restaurant) => {
+            return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
+            };
+        },
+        loadAll() {
+            return [
+                { "value": "2015级"},
+                { "value": "2016级"},
+                { "value": "2017级"},
+            ];
+        },
+        handleSelect(item) {
+            console.log(item);
+        },
         //拼接字符串
         placeholderFilter: function(type, label) {
             var str = "";

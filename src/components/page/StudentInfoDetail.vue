@@ -261,28 +261,9 @@ export default {
         },
         // 确认修改
         onSubmit() {
-            let {
-                username,
-                email, 
-                telno, 
-                address, 
-                user_type_name, 
-                college_id, // 用户学院
-                major_id, // 用户专业
-                aclass_id,
-                user_id,
-            } = this.userForm;
             let params = {
                 userForm: {
-                    username,
-                    email, 
-                    telno, 
-                    address, 
-                    user_type_name, 
-                    user_id,
-                    aclass_id,
-                    college_id, // 用户学院
-                    major_id, // 用户专业
+                    ...this.userForm
                 }
             }
             axios

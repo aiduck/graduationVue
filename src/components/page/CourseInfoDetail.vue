@@ -2,7 +2,7 @@
     <div class="wrap">
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 用户基本信息/学生详细信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-read"></i> 课程信息/课程详细信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container formCon">
@@ -20,16 +20,30 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="平时成绩">
-                                <el-input v-model="form.ratio_usual" :disabled="ischeck"></el-input>
+                            <el-form-item label="学年">
+                                <el-input v-model="form.year" :disabled="ischeck"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="期末成绩">
-                                <el-input v-model="form.ratio_project" :disabled="ischeck"></el-input>
+                            <el-form-item label="学期">
+                                 <el-select v-model="form.term" :disabled="ischeck">
+                                    <el-option label="第1学期" value="第1学期"></el-option>
+                                    <el-option label="第2学期" value="第2学期"></el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="12">
+                            <el-form-item label="学时">
+                                <el-input v-model="form.hours" :disabled="ischeck"></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                            <el-form-item label="年级">
+                                <el-input v-model="form.grade" :disabled="ischeck"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -71,27 +85,17 @@
                     
                     <el-row>
                         <el-col :span="12">
-                            <el-form-item label="学年">
-                                <el-input v-model="form.year" :disabled="ischeck"></el-input>
+                            <el-form-item label="平时成绩">
+                                <el-input v-model="form.ratio_usual" :disabled="ischeck"></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
-                            <el-form-item label="学期">
-                                 <el-select v-model="form.term" :disabled="ischeck">
-                                    <el-option label="上" value="上"></el-option>
-                                    <el-option label="下" value="下"></el-option>
-                                </el-select>
+                            <el-form-item label="期末成绩">
+                                <el-input v-model="form.ratio_project" :disabled="ischeck"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
 
-                    <el-row>
-                        <el-col :span="12">
-                            <el-form-item label="学时">
-                                <el-input v-model="form.hours" :disabled="ischeck"></el-input>
-                            </el-form-item>
-                        </el-col>
-                    </el-row>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="课程状态">
@@ -104,8 +108,6 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-
-                    
 
                     <el-form-item class="footSubmit" size="medium" v-if="!ischeck">
                         <el-button type="primary" @click="onSubmit">确认修改</el-button>
@@ -131,6 +133,7 @@ export default {
                 year: '',
                 term: '',
                 hours: '',
+                grade: '',
                 college_id: '',
                 major_id: '',
                 ratio_usual: '',
@@ -207,7 +210,7 @@ export default {
                 this.isMajorSelect = true;
             }
         },
-        // 初始化用户信息
+        // 初始化信息
         initUserInfo() {
             let params = {
                 course_id: this.$route.params.courseId
@@ -229,28 +232,9 @@ export default {
         },
         // 确认修改
         onSubmit() {
-            let {
-                course_id,
-                course_name,
-                year,
-                term,
-                hours,
-                college_id,
-                major_id,
-                ratio_usual,
-                ratio_project
-            } = this.form;
             let params = {
                 form: {
-                    course_id,
-                    course_name,
-                    year,
-                    term,
-                    hours,
-                    college_id,
-                    major_id,
-                    ratio_usual,
-                    ratio_project,
+                   ...this.form
                 }
             }
             console.log(params);
