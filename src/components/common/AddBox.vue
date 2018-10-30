@@ -4,8 +4,9 @@
         :visible.sync = "visible"
         @close="handleCancel"
         :close-on-click-modal="false"
+        width="700px"
         center>
-        <el-form :inline="true" ref="form" :model="addForm" label-width="9rem" :rules="rules">
+        <el-form :inline="true" ref="form" :model="addForm" :rules="rules">
             <el-row>
                 <el-col :span="12" v-for="(value, key, index) in tmpl" :key="index">
                     <el-form-item :label="value.label" :prop="key">
@@ -24,12 +25,21 @@
                             @clear="handleClear(value)">
                                 <el-option 
                                     v-for="item in valueLabelMap[key]"
-                                    :key = "item.value"
-                                    :label = "item.label"
-                                    :value = "item.value">
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value"
+                                    :disabled="item.disabled">
                                 </el-option>
                         </el-select>
-                    
+                        <el-date-picker
+                            v-if="value.inputType === 2"
+                            v-model="addForm[key]"
+                            align="right"
+                            type="year"
+                            value-format="yyyy"
+                            placeholder="选择年"
+                            clearable>
+                        </el-date-picker>
                     </el-form-item>
                 </el-col>
             </el-row>

@@ -74,7 +74,8 @@
                                     <el-option v-for="item in college"
                                         :key = "item.college_id"
                                         :label = "item.college_id"
-                                        :value = "item.college_id">
+                                        :value = "item.college_id"
+                                        :disabled="item.status==='可用'?false:true">
                                     </el-option>
                                 </el-select>
                             </el-form-item>
@@ -89,7 +90,8 @@
                                     <el-option v-for="item in major"
                                         :key = "item.major_id"
                                         :label = "item.major_id"
-                                        :value = "item.major_id">
+                                        :value = "item.major_id"
+                                        :disabled="item.status==='可用'?false:true">
                                     </el-option>
                                 </el-select>
                             </el-form-item>
