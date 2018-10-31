@@ -166,7 +166,7 @@ export default {
             .get('/api/basicInfo/queryCollege')
             .then(res => {
                 if(res.data.code === 200){
-                    this.college = res.data.data;
+                    this.college = res.data.data || [];
                     // console.log(this.college);
                 }
             })

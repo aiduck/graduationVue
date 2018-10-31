@@ -95,7 +95,7 @@
                 <el-pagination
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
-                    :current-page="currentPage"
+                    :current-page.sync="currentPage"
                     :page-size="pageSize"
                     :total="totalCount">
                 </el-pagination>
@@ -299,6 +299,7 @@ export default {
                     let userRes = res.data.data;
                     this.totalCount = userRes.total;
                     this.tableData = userRes.userList;
+                    this.currentPage = 1;
                 }
             })
             .catch(err => {

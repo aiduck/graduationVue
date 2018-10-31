@@ -2,7 +2,7 @@
     <div class="wrap">
          <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 课程信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-read"></i> 课程信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <!-- 表格 -->
@@ -97,7 +97,7 @@
                 <el-pagination
                     @size-change="handleSizeChange"
                     @current-change="handleCurrentChange"
-                    :current-page="currentPage"
+                    :current-page.sync="currentPage"
                     :page-size="pageSize"
                     :total="totalCount">
                 </el-pagination>
@@ -133,6 +133,7 @@ export default {
             },
             expandFormatMap: {
                 // 格式化额外信息映射表
+                course_id: "课程ID",
                 grade: "年级",
                 hours: "学时",
                 college_id: "学院",
@@ -140,7 +141,7 @@ export default {
                 ratio_project:"期末成绩"
             },
             hideMap: {
-                course_id: "课程ID",
+
             },
             // 表格页码参数
             pageSize: 10, //每页大小
@@ -383,6 +384,7 @@ export default {
                     let courseRes = res.data.data;
                     this.totalCount = courseRes.total;
                     this.tableData = courseRes.courseList;
+                    this.currentPage = 1;
                     // console.log(res)
                 }
             })

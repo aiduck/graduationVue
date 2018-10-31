@@ -80,6 +80,11 @@
                         index: '/courseInfo',
                         title: '课程信息',
                     },
+                    {
+                        icon: 'el-icon-lx-tag',
+                        index: '/classInfo',
+                        title: '班级信息',
+                    },
                 ]
             }
         },

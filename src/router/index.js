@@ -73,6 +73,18 @@ export default new Router({
           component: resolve => require(['../components/page/CourseInfoDetail.vue'], resolve),
           meta: { title: '课程详情管理' }
         },
+        {
+          // 班级管理
+          path: '/classInfo',
+          component: resolve => require(['../components/page/ClassInfo.vue'], resolve),
+          meta: { title: '教学班级管理' }
+        },
+        {
+          // 班级管理
+          path: '/classInfo/:classId/:isCheck',
+          component: resolve => require(['../components/page/ClassInfoDetail.vue'], resolve),
+          meta: { title: '教学班级详情' }
+        },
       ]
     },
     {
