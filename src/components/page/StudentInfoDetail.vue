@@ -170,7 +170,12 @@ export default {
             .get('/api/basicInfo/queryCollege')
             .then(res => {
                 if(res.data.code === 200){
-                    this.college = res.data.data;
+                    this.college = res.data.data || [];
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -189,7 +194,12 @@ export default {
             .post('/api/basicInfo/queryMajor',collegeId)
             .then(res => {
                 if(res.data.code === 200){
-                    this.major = res.data.data;
+                    this.major = res.data.data || [];
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -208,7 +218,12 @@ export default {
             .post('/api/basicInfo/queryAdClass',majorId)
             .then(res => {
                 if(res.data.code === 200){
-                    this.adclass = res.data.data;
+                    this.adclass = res.data.data || [];
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -248,8 +263,13 @@ export default {
             .post('/api/studentInfo/queryUserById',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    let user = res.data.data.user[0];
+                    let user = res.data.data.user[0] || [];
                     this.userForm = user;
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -273,6 +293,11 @@ export default {
                     this.$message({
                         message: `修改成功`,
                         type: 'success'
+                    });
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
                     });
                 }
             })
@@ -300,6 +325,11 @@ export default {
                         message:'重置密码成功',
                         type: 'success'
                     })
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -323,6 +353,11 @@ export default {
                 if(res.data.code === 200) {
                     // 前端修改用户状态
                     this.userForm.status = this.userForm.status === '可用' ? '不可用' : '可用';
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {

@@ -2,7 +2,7 @@
     <div class="wrap">
          <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 用户基本信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 学生基本信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <!-- 表格 -->
@@ -41,11 +41,12 @@
                 @handleClear="inputClear"/>
             <!-- 添加框 -->
             <add-box :show="showInfoAdd"
-                    :tmpl = "infoAddTmpl"
-                    :valueLabelMap = "valueLabelMap"
-                    :rules = "infoAddRules"
-                    @sendInfo = "receiveInfo"
-            ></add-box>
+                    :tmpl="infoAddTmpl"
+                    :valueLabelMap="valueLabelMap"
+                    :rules="infoAddRules"
+                    @sendInfo="receiveInfo"
+                    @inputChange="inputChange"
+                    @handleClear="inputClear"/>
             <!-- 表格 -->
             <el-table 
                 :data="tableData" 
@@ -53,16 +54,6 @@
                 style="width: 100%" 
                 ref="multipleTable" 
                 @selection-change="handleSelectionChange">
-
-                <el-table-column type="expand">
-                    <template slot-scope="props">
-                    <el-form label-position="left" inline class="demo-table-expand">
-                        <el-form-item v-for="(value, key) in expandFormatMap" :key='key' :label="value" class="expandItem">
-                        <span>{{ props.row[key] }}</span>
-                        </el-form-item>
-                    </el-form>
-                    </template>
-                </el-table-column>
 
                 <el-table-column type="selection" width="35"></el-table-column>
 
@@ -73,20 +64,20 @@
                        :resizable="false">
                 </el-table-column>
 
-                <el-table-column label="操作" width="240">
+                <el-table-column label="操作" width="300">
                     <template slot-scope="scope">
                         <el-button
                             size="small"
                             type="primary"
-                            @click="handleMore(scope.$index, scope.row)">更多</el-button>
+                            @click="handleMore(scope.$index, scope.row)">查看学生</el-button>
                         <el-button
                             size="small"
                             type="success"
-                            @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                            @click="handleEdit(scope.$index, scope.row)">查看班级</el-button>
                         <el-button
                             size="small"
                             type="danger"
-                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status == '可用' ? '禁用' : '启用'}}</el-button>
+                            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -124,19 +115,10 @@ export default {
             // 表格头部
             keyFormatMap: {
                 // 格式化标签映射表
-                // userId: "用户名",
+                user_id: "用户名",
                 username: "用户姓名",
-                telno: "联系方式",
-                user_type_name: "用户类别",
-                status: "用户状态"
-            },
-            expandFormatMap: {
-                // 格式化额外信息映射表
-                address: "详细地址",
-                email: "邮箱"
-            },
-            hideMap: {
-                user_id: "用户名"
+                class_id: "班级ID",
+                class_name: "班级名称",
             },
             // 表格页码参数
             pageSize: 10, //每页大小
@@ -147,31 +129,10 @@ export default {
             isFirstFilter: true,
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
+            isMjorSelect: false,
+            isAdclassSelect: false,
             valueLabelMap:{
-                user_type_name: [
-                    {
-                        value: "学生",
-                        label: "学生"
-                    },
-                    {
-                        value: "教师",
-                        label: "教师"
-                    },
-                    {
-                        value: "管理员",
-                        label: "管理员"
-                    }
-                ],
-                status: [
-                    {
-                        value: "可用",
-                        label: "可用"
-                    },
-                    {
-                        value: "不可用",
-                        label: "不可用"
-                    }
-                ],
+               
             },
             filterTmpl: {
                 user_id: {
@@ -182,21 +143,21 @@ export default {
                     label: "用户姓名",
                     inputType: 0 // 0 代表 input
                 },
-                user_type_name: {
-                    label: "用户类型",
-                    inputType: 1
+                class_id: {
+                    label: "班级ID",
+                    inputType: 0 // 0 代表 input
                 },
-                status: {
-                    label: "用户状态",
-                    inputType: 1 // 1 代表下拉框
+                class_name: {
+                    label: "班级名称",
+                    inputType: 0 // 0 代表 input
                 },
             },
             filter: {
                 //搜索条件
-                user_id: "", // 用户名
-                username: "", //用户姓名
-                user_type_name: "", //用户类别
-                status: "", //用户状态
+                user_id: "",
+                username: "",
+                class_id: "",
+                class_name: "",
             },
             // 添加表格参数
             showInfoAdd: false,
@@ -209,25 +170,13 @@ export default {
                     label: "用户姓名",
                     inputType: 0 // 0 代表 input
                 },
-                email: {
-                    label: "邮箱",
+                class_id: {
+                    label: "班级ID",
                     inputType: 0 // 0 代表 input
                 },
-                telno: {
-                    label: "电话",
+                class_name: {
+                    label: "班级名称",
                     inputType: 0 // 0 代表 input
-                },
-                address: {
-                    label: "地址",
-                    inputType: 0 // 0 代表 input
-                },
-                user_type_name: {
-                    label: "用户类型",
-                    inputType: 1
-                },
-                status: {
-                    label: "用户状态",
-                    inputType: 1 // 1 代表下拉框
                 },
             },
             infoAddRules: {
@@ -237,11 +186,11 @@ export default {
                 username: [
                     { required: true, message: "请输入用户姓名", trigger: "blur" }
                 ],
-                user_type_name: [
-                    { required: true, message: "请选择用户类型", trigger: "blur"}
+                class_id: [
+                    { required: true, message: "请选择班级ID", trigger: "blur" }
                 ],
-                status: [
-                    { required: true, message: "请选择用户状态", trigger: "blur" }
+                class_name: [
+                    { required: true, message: "请选择班级名称", trigger: "blur" }
                 ]
             }
         }
@@ -278,18 +227,20 @@ export default {
     },
     methods: {
         // 初始化用户信息
-        initUserInfo(pageSize, currentPage,val) {
+        initUserInfo(pageSize, currentPage, val) {
             let params = {
                 pageSize: pageSize,
                 currentPage: currentPage
             }
             axios
-            .get('/api/userInfo/queryLimitUser',{params})
+            .get('/api/classInfo/queryLimitClassMemeber',{params})
             .then(res => {
+                // console.log(res);
                 if(res.data.code === 200){
                     let userRes = res.data.data;
+                    // console.log(userRes);
                     this.totalCount = userRes.total;
-                    this.tableData = userRes.userList || [];
+                    this.tableData = userRes.classList || [];
                     this.currentPage = val || 1;
                 }  else {
                     this.$message({
@@ -314,34 +265,22 @@ export default {
                     cancelButtonText: '取消',
                     type: 'warning'
                 }).then(() => {
-                    let userIdList = [];
-                    let teacherList = [];
-                    let studentList = [];
+                    let classIdList = [];
                     this.multipleSelection.map((item, index) => {
-                        userIdList.push(item.user_id);
-                        if(item.user_type_name === '教师') {
-                            teacherList.push(item.user_id);
-                        } else if(item.user_type_name === '学生') {
-                            studentList.push(item.user_id);
-                        }
+                        classIdList.push(item.id);
                     })
                     let params = {
-                        userList: userIdList,
-                        teacherList: teacherList,
-                        studentList: studentList
+                        classIdList: classIdList
                     }
-                    // console.log(params)
                     axios
-                    .post('api/userInfo/daleteUserList', params)
+                    .post('api/classInfo/daleteClassMemeberList', params)
                     .then(res => {
-                        // console.log(res);
                         if(res.data.code === 200) {
                             this.initUserInfo(this.pageSize, this.currentPage);
                             this.$message({
                                 type: 'success',
                                 message: '删除成功!'
                             });
-                            // this.tableData = util.arrMinus(this.tableData,this.multipleSelection);
                         }  else {
                             this.$message({
                                 type: 'warning',
@@ -416,22 +355,19 @@ export default {
         // 批量导入用户信息接口
         insertUserInfo(data) {
             axios
-            .post("/api/userInfo/insertUserList",data)
+            .post("/api/classInfo/insterClassMemeber",data)
             .then(res => {
                 if (res.data.code == 200) {
-                    // console.log(res)
-                    let user = res.data.data.data;
-                    // console.log(user);
-                    this.initUserInfo(this.pageSize, this.currentPage);
-                    if(user.warningCount !== 0) {
-                        // 这边就是外键的约束，如果存在错误就是插入的专业对应的学院信息不存在
+                    
+                    if(res.data.data.warningCount === data.length){
                         this.$message({
-                            message: `有${user.warningCount}条数据错误，请检查是否存在用户信息错误`,
-                            type: 'warning'
+                            message: `重复插入信息`,
+                            type: 'error'
                         });
-                    } else if(user.warningCount === 0) {
+                    } else {
+                        this.initUserInfo(this.pageSize, this.currentPage);
                         this.$message({
-                            message: `成功插入${user.affectedRows}条信息`,
+                            message: `成功插入信息${res.data.data.affectedRows}条信息`,
                             type: 'success'
                         });
                     }
@@ -453,22 +389,18 @@ export default {
             // 处理导入的数据内容
             var insertData = [];
             data.map((item, index) => {
-                if(item.用户名 === undefined || item.用户姓名 === undefined || item.用户类型 === undefined) {
+                
+                if(item.用户名 === undefined || item.班级ID === undefined) {
                     this.isExitEmpty = true;
                 } else {
                     let tableItem = {
                         user_id: item.用户名,
                         username: item.用户姓名,
-                        password: item.密码,
-                        email: item.邮箱,
-                        telno: item.电话,
-                        address: item.地址,
-                        user_type_name: item.用户类型,
-                        status: item.用户状态
+                        class_id: item.班级ID,
+                        class_name: item.班级名称,
                     }
                     insertData.push(tableItem);
                 }
-                
             });
             // 初始化imFile的value值
             // 初始化进度为false
@@ -487,7 +419,7 @@ export default {
                         }
                     });
                 } else {
-                   this.insertUserInfo(insertData);
+                    this.insertUserInfo(insertData);
                 }
             }
         },
@@ -497,24 +429,22 @@ export default {
             // 反之则导出筛选之后的内容
             if(this.tagEmpty) {
                 axios
-                .get('/api/userInfo/queryUser')
+                .get('/api/classInfo/queryAllClassMemeber')
                 .then(res => {
                     if(res.data.code === 200){
                         this.excelData = res.data.data.userList || [];
+                        // console.log(this.excelData);
                         // 表格标题
                         let data = [{
-                            address: '地址',
-                            email: '邮箱',
-                            status: '用户状态',
-                            telno: '联系方式',
                             user_id: '用户名',
-                            user_type_name: '用户类型',
-                            username: '用户姓名'
+                            username: '用户姓名',
+                            class_id: '班级ID',
+                            class_name: '班级名称',
                         }]
                         data = data.concat(this.excelData)
                         // 文件名
-                        this.downloadExl(data, '用户名单')
-                    }  else {
+                        this.downloadExl(data, '教学班级名单')
+                    } else {
                         this.$message({
                             type: 'warning',
                             message: `数据库操作失败错误代码${res.data.code}`
@@ -533,23 +463,21 @@ export default {
                     filter: this.filter
                 }
                 axios
-                .post('/api/userInfo/queryAllFilter',params)
+                .post('/api/classInfo/queryAllClassMemeberFilter',params)
                 .then(res => {
                     if(res.data.code === 200){
-                        this.excelData = res.data.data.allList || [];
+                        this.excelData = res.data.data.classMemeberList || [];
+                        // console.log(this.excelData);
                         // 表格标题
                         let data = [{
-                            address: '地址',
-                            email: '邮箱',
-                            status: '用户状态',
-                            telno: '联系方式',
                             user_id: '用户名',
-                            user_type_name: '用户类型',
-                            username: '用户姓名'
+                            username: '用户姓名',
+                            class_id: '班级ID',
+                            class_name: '班级名称',
                         }]
                         data = data.concat(this.excelData)
                         // 文件名
-                        this.downloadExl(data, '用户名单')
+                        this.downloadExl(data, '教学班级名单')
                     } else {
                         this.$message({
                             type: 'warning',
@@ -564,6 +492,17 @@ export default {
                         type: 'error'
                     });
                 })
+                // this.excelData = this.tableData;
+                // // 表格标题
+                // let data = [{
+                //     user_id: '用户名',
+                //     username: '用户姓名',
+                //     class_id: '班级ID',
+                //     class_name: '班级名称',
+                // }]
+                // data = data.concat(this.excelData)
+                // // 文件名
+                // this.downloadExl(data, '教学班级名单')
             }
             
         },
@@ -626,22 +565,21 @@ export default {
         },
         // 单个添加按钮
         handleAdd() {
-            this.showInfoAdd = true;
+            this.showInfoAdd = true;   
         },
         receiveInfo(addform) {
             this.showInfoAdd = false;
             if (addform !== undefined) {
                 axios
-                .post('/api/userInfo/insertUserList', addform)
+                .post('/api/classInfo/insterClassMemeber', addform)
                 .then(res => {
-                    // console.log(res);
                     if(res.data.code === 200) {
                         this.$message({
                             message: `添加成功`,
                             type: 'success'
                         });
                         this.initUserInfo(this.pageSize, this.currentPage)
-                    }  else {
+                    } else {
                         this.$message({
                             type: 'warning',
                             message: `数据库操作失败错误代码${res.data.code}`
@@ -662,24 +600,22 @@ export default {
         enterFilter() {
             this.isFirstFilter = true;
             if(this.isFilterIng) {
-                console.log('退出筛选');
+                // 退出筛选
                 this.filter = util.resetObject(this.filter);
-                // 就是没有任何条件的所有信息
-                 this.initUserInfo(this.pageSize, this.currentPage);
+                this.initUserInfo(this.pageSize, this.currentPage);
             }
             else {
-                console.log('进入筛选');
                 this.showFilterBox = true;
             }
         },
         filterData(params) {
             axios
-            .post('/api/userInfo/queryByFilter', params)
+            .post('/api/classInfo/queryByFilterMemeber', params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.tableData = res.data.data.userList || [];
+                    this.tableData = res.data.data.classMemeberList || [];
                     this.totalCount = res.data.data.total;
-                }  else {
+                } else {
                     this.$message({
                         type: 'warning',
                         message: `数据库操作失败错误代码${res.data.code}`
@@ -705,10 +641,13 @@ export default {
                 this.filterData(params);
             } else if (this.isFirstFilter && filter === undefined) {
                 let  filter = {
+                    //搜索条件
                     user_id: "", // 用户名
                     username: "", //用户姓名
-                    user_type_name: "", //用户类别
                     status: "", //用户状态
+                    college_id: "", // 用户学院
+                    major_id: "", // 用户专业
+                    aclass_id: "", // 用户行政班级
                 }
                 this.filter = filter;
             }
@@ -721,40 +660,36 @@ export default {
             value = value.toString();
             return Object.assign({}, this.keyFormatMap, this.expandFormatMap, this.hideMap)[value];
         },
-        async inputChange(oldObj, newObj) {
-            // 筛选框中下拉框handleSelectChange改变
-            console.log(oldObj,newObj);
-        },
-        inputClear(type) {
-            // 筛选框中下拉框handleClear清除
-            console.log(type);
-        },
+        async inputChange(oldObj, newObj) {},
+        inputClear(type) {},
         // 批量删除按钮
         handleSelectionChange(val) {
             this.multipleSelection = val;
         },
-        // 更多按钮
+        // 查看学生
         handleMore(index, row) {
-            this.$router.push(`/userDetails/${row.user_id}/ischeck`);
+            this.$router.push(`/studentInfo/${row.user_id}/ischeck`);
         },
-        // 编辑按钮
+        // 查看班级
         handleEdit(index, row) {
-            this.$router.push(`/userDetails/${row.user_id}/isedit`);
+            this.$router.push(`/classInfo/${row.class_id}/ischeck`);
         },
-        // 禁用按钮
+        // 删除按钮
         handleDelete(index, row) {
-            let status = row.status === '可用' ? '不可用' : '可用';
-            let user_id = row.user_id;
+            let classIdList = [];
+            classIdList.push(row.id);
             let params = {
-                status: status,
-                user_id: user_id
+                classIdList: classIdList
             }
             axios
-            .post('/api/userInfo/updateStatus', params)
+            .post('api/classInfo/daleteClassMemeberList', params)
             .then(res => {
                 if(res.data.code === 200) {
-                    // 前端修改用户状态
-                    this.tableData[index].status = row.status === '可用' ? '不可用' : '可用';
+                    this.initUserInfo(this.pageSize, this.currentPage);
+                    this.$message({
+                        type: 'success',
+                        message: '删除成功!'
+                    });
                 }  else {
                     this.$message({
                         type: 'warning',
@@ -763,16 +698,16 @@ export default {
                 }
             })
             .catch(err => {
+                console.log(err);
                 this.$message({
-                    message: `链接发生错误`,
-                    type: 'error'
-                });
+                    type: 'error',
+                    message: '删除失败！'
+                }); 
             })
 
         },
         // 分页操作按钮
         handleCurrentChange(val) {
-            console.log(`当前页: ${val}`);
             let currentPage = val;
             if(this.tagEmpty) {
                 this.initUserInfo(this.pageSize, currentPage,val);
@@ -784,7 +719,6 @@ export default {
                 }
                 this.filterData(params);
             }
-            
         },
         handleSizeChange(val) {
             console.log(`每页 ${val} 条`);

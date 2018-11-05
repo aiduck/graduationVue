@@ -221,6 +221,11 @@
                         } else if(data.type === 'college') {
                             this.initCollege(data.item);
                         }
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -257,6 +262,11 @@
                     if(res.data.code === 200){
                         // 前端删除
                         this.adclass.splice(index, 1);
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -273,7 +283,7 @@
                 .get('/api/basicInfo/queryCollege')
                 .then(res => {
                     if(res.data.code === 200){
-                        this.college = res.data.data;
+                        this.college = res.data.data || [];
                         if(res.data.data.length > 0) {
                             if(this.college[0] !== undefined && from === 'init') {
                                 this.initMajor(this.college[0], 'init');
@@ -290,6 +300,11 @@
                             // });
                         }
                         
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -312,14 +327,14 @@
                             // console.log(res.data.data);
                             // 是否是下拉框中要更新信息
                             if(from === 'select') {
-                                this.selectMajorList = res.data.data;
+                                this.selectMajorList = res.data.data || [];
                             } else if(from === 'init'){
-                                this.major = res.data.data;
+                                this.major = res.data.data || [];
                             } else if(from === 'statusBtn') {
-                                this.major = res.data.data;
+                                this.major = res.data.data || [];
                                 this.initAdclass(college);
                             } else {
-                                this.major = res.data.data;
+                                this.major = res.data.data || [];
                                 this.initAdclass(this.major[0]);
                             }
                             // 是否调用班级信息的接口
@@ -334,6 +349,11 @@
                             //     type: 'warning'
                             // });
                         } 
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -354,10 +374,10 @@
                     if(res.data.code === 200){
                         if(res.data.data.length > 0) {
                             if(from === 'init') {
-                                this.adclass = res.data.data;
+                                this.adclass = res.data.data || [];
                                 this.initMsg(0,0,0);
                             } else {
-                                this.adclass = res.data.data;
+                                this.adclass = res.data.data || [];
                                 this.infoMsg(major.college_id,major.major_id,0);
                             } 
                         } else {
@@ -366,8 +386,12 @@
                             //     message: `班级查询数据为空`,
                             //     type: 'warning'
                             // });
-                        }
-                        
+                        } 
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -462,7 +486,7 @@
                 .post("/api/basicInfo/insertCollege",data)
                 .then(res => {
                     if (res.data.code == 200) {
-                        let collegeData = res.data.data;
+                        let collegeData = res.data.data || [];
                         // 导入信息之后，都进行一次初始化
                         this.initCollege(null,'init');
                        if(collegeData.warningCount !== 0) {
@@ -477,6 +501,11 @@
                                 type: 'success'
                             });
                         }
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -493,7 +522,7 @@
                 .then(res => {
                     console.log(res);
                     if (res.data.code === 200) {
-                        let majorData = res.data.data;
+                        let majorData = res.data.data || [];
                         // 导入信息之后，都进行一次初始化
                         this.initCollege(null,'init');
                         if(majorData.warningCount !== 0) {
@@ -508,6 +537,11 @@
                                 type: 'success'
                             });
                         }
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -523,7 +557,7 @@
                 .post("/api/basicInfo/insertAdclass",data)
                 .then(res => {
                     if (res.data.code == 200) {
-                        let adclassData = res.data.data;
+                        let adclassData = res.data.data || [];
                         // 导入信息之后，都进行一次初始化
                         this.initCollege(null,'init');
                        if(adclassData.warningCount !== 0) {
@@ -538,6 +572,11 @@
                                 type: 'success'
                             });
                         }
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -712,6 +751,11 @@
                             type: 'success'
                         });
                         this.dialogFormVisible = false;
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
                     }
                 })
                 .catch(err => {

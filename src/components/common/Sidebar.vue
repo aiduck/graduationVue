@@ -80,11 +80,22 @@
                         index: '/courseInfo',
                         title: '课程信息',
                     },
-                    {
+                     {
                         icon: 'el-icon-lx-tag',
-                        index: '/classInfo',
+                        index: '5',
                         title: '班级信息',
+                        subs: [
+                            {
+                                index: '/classInfo',
+                                title: '班级基本信息',
+                            },
+                            {
+                                index: '/classMemeberInfo',
+                                title: '班级成员信息',
+                            },
+                        ]
                     },
+                    
                 ]
             }
         },

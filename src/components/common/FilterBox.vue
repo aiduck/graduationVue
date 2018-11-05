@@ -20,7 +20,7 @@
                             v-if="value.inputType === 1"
                             v-model="filter[key]"
                             :placeholder="placeholderFilter(value.inputType, value.label)" 
-                            :disabled="value.disabled"
+                            :disabled="value.disabled || false"
                             clearable
                             @change="handleSelectChange(filter[key], value)"
                             @clear="handleClear(value)">
@@ -28,7 +28,7 @@
                                 :key="item.value"
                                 :label="item.label"
                                 :value="item.value"
-                                :disabled="item.disabled">
+                                :disabled="item.disabled || false">
                             </el-option>
                         </el-select>
                         <el-date-picker

@@ -74,16 +74,22 @@ export default new Router({
           meta: { title: '课程详情管理' }
         },
         {
-          // 班级管理
+          // 班级基本信息
           path: '/classInfo',
           component: resolve => require(['../components/page/ClassInfo.vue'], resolve),
           meta: { title: '教学班级管理' }
         },
         {
-          // 班级管理
+          // 班级详情信息
           path: '/classInfo/:classId/:isCheck',
           component: resolve => require(['../components/page/ClassInfoDetail.vue'], resolve),
           meta: { title: '教学班级详情' }
+        },
+        {
+          // 班级成员信息
+          path: '/classMemeberInfo',
+          component: resolve => require(['../components/page/classMemeberInfo.vue'], resolve),
+          meta: { title: '班级成员信息' }
         },
       ]
     },

@@ -287,7 +287,7 @@ export default {
     },
     methods: {
         // 初始化用户信息
-        initUserInfo(pageSize, currentPage) {
+        initUserInfo(pageSize, currentPage,val) {
             let params = {
                 pageSize: pageSize,
                 currentPage: currentPage
@@ -298,8 +298,13 @@ export default {
                 if(res.data.code === 200){
                     let userRes = res.data.data;
                     this.totalCount = userRes.total;
-                    this.tableData = userRes.userList;
-                    this.currentPage = 1;
+                    this.tableData = userRes.userList || [];
+                    this.currentPage = val || 1;
+                }   else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -322,21 +327,24 @@ export default {
                     this.multipleSelection.map((item, index) => {
                         userIdList.push(item.user_id);
                     })
-                    console.log(userIdList);
                     let params = {
                         userList: userIdList
                     }
                     axios
                     .post('api/teacherInfo/daleteUserList', params)
                     .then(res => {
-                        console.log(res);
                         if(res.data.code === 200) {
                             this.initUserInfo(this.pageSize, this.currentPage);
                             this.$message({
                                 type: 'success',
                                 message: '删除成功!'
                             });
-                        }
+                        }  else {
+                            this.$message({
+                                type: 'warning',
+                                message: `数据库操作失败错误代码${res.data.code}`
+                            });
+                        } 
                     })
                     .catch(err => {
                         console.log(err);
@@ -413,7 +421,12 @@ export default {
                         message: `成功插入信息`,
                         type: 'success'
                     });
-                }
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                } 
             })
             .catch(err => {
                 this.$message({
@@ -475,7 +488,7 @@ export default {
                 .get('/api/teacherInfo/queryUser')
                 .then(res => {
                     if(res.data.code === 200){
-                        this.excelData = res.data.data.userList;
+                        this.excelData = res.data.data.userList || [];
                         // 表格标题
                         let data = [{
                             address: '地址',
@@ -492,7 +505,12 @@ export default {
                         data = data.concat(this.excelData)
                         // 文件名
                         this.downloadExl(data, '教师名单')
-                    }
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
+                    } 
                 })
                 .catch(err => {
                     console.log(err);
@@ -502,23 +520,44 @@ export default {
                     });
                 })
             } else {
-                this.excelData = this.tableData;
-                // 表格标题
-                let data = [{
-                    address: '地址',
-                    email: '邮箱',
-                    status: '用户状态',
-                    telno: '联系方式',
-                    user_id: '用户名',
-                    user_type_name: '用户类型',
-                    username: '用户姓名',
-                    sex: '性别',
-                    job_title: '职称',
-                    education: '学历'
-                }]
-                data = data.concat(this.excelData)
-                // 文件名
-                this.downloadExl(data, '教师名单')
+                let params = {
+                    filter: this.filter
+                }
+                axios
+                .post('/api/teacherInfo/queryAllFilter',params)
+                .then(res => {
+                    if(res.data.code === 200){
+                        this.excelData = res.data.data.allList || [];
+                        // 表格标题
+                        let data = [{
+                            address: '地址',
+                            email: '邮箱',
+                            status: '用户状态',
+                            telno: '联系方式',
+                            user_id: '用户名',
+                            user_type_name: '用户类型',
+                            username: '用户姓名',
+                            sex: '性别',
+                            job_title: '职称',
+                            education: '学历'
+                        }]
+                        data = data.concat(this.excelData)
+                        // 文件名
+                        this.downloadExl(data, '教师名单')
+                    } else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    this.$message({
+                        message: `链接发生错误`,
+                        type: 'error'
+                    });
+                })
             }
             
         },
@@ -589,14 +628,19 @@ export default {
                 axios
                 .post('/api/teacherInfo/insertUserList', addform)
                 .then(res => {
-                    console.log(res);
+                    // console.log(res);
                     if(res.data.code === 200) {
                         this.$message({
                             message: `添加成功`,
                             type: 'success'
                         });
                         this.initUserInfo(this.pageSize, this.currentPage)
-                    }
+                    }   else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
+                    } 
                     
                 })
                 .catch(err => {
@@ -626,8 +670,15 @@ export default {
             axios
             .post('/api/teacherInfo/queryByFilter', params)
             .then(res => {
-                this.tableData = res.data.data.userList;
-                this.totalCount = res.data.data.total;
+                if(res.data.code === 200) {
+                    this.tableData = res.data.data.userList || [];
+                    this.totalCount = res.data.data.total;
+                }   else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
             })
             .catch(err => {
                 console.log(err);
@@ -699,6 +750,11 @@ export default {
                 if(res.data.code === 200) {
                     // 前端修改用户状态
                     this.tableData[index].status = row.status === '可用' ? '不可用' : '可用';
+                }   else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -714,7 +770,7 @@ export default {
             console.log(`当前页: ${val}`);
             let currentPage = val;
             if(this.tagEmpty) {
-                this.initUserInfo(this.pageSize, currentPage);
+                this.initUserInfo(this.pageSize, currentPage,val);
             } else {
                 let params = {
                     filter: this.filter,

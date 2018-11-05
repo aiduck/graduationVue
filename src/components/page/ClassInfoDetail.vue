@@ -2,7 +2,7 @@
     <div class="wrap">
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-tag"></i> 班级信息/班级详细信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-tag"></i> 班级基本信息/班级详细信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container formCon">
@@ -213,8 +213,13 @@ export default {
             .post('/api/courseInfo/queryCourseById',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    let course = res.data.data.course[0] || [];
+                    let course = res.data.data.course[0] || {};
                     this.form.course = course;
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -233,8 +238,13 @@ export default {
             .post('/api/teacherInfo/queryUserById',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    let user = res.data.data.user[0] || [];
+                    let user = res.data.data.user[0] || {};
                     this.form.teacher = user;
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -254,12 +264,17 @@ export default {
             .then(res => {
                 if(res.data.code === 200) {
                     // console.log(res);
-                    let course = res.data.data.course[0];
-                    let _class = res.data.data._class[0];
-                    let teacher = res.data.data.teacher[0];
+                    let course = res.data.data.course[0] || {};
+                    let _class = res.data.data._class[0] || {};
+                    let teacher = res.data.data.teacher[0] || {};
                     this.form.course = course;
                     this.form._class = _class;
                     this.form.teacher = teacher;
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -284,6 +299,11 @@ export default {
                     this.$message({
                         message: `修改成功`,
                         type: 'success'
+                    });
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
                     });
                 }
             })
@@ -313,8 +333,13 @@ export default {
                     // console.log(res)
                     // 前端修改用户状态
                     this.form._class.status = this.form._class.status === '可用' ? '不可用' : '可用';
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
-            })
+            }) 
             .catch(err => {
                 this.$message({
                     message: `链接发生错误`,

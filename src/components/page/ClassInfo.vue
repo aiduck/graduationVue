@@ -2,7 +2,7 @@
     <div class="wrap">
          <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-tag"></i> 班级信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-tag"></i> 班级基本信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <!-- 表格 -->
@@ -260,7 +260,7 @@ export default {
     },
     methods: {
         // 初始化信息
-        initClassInfo(pageSize, currentPage) {
+        initClassInfo(pageSize, currentPage,val) {
             let params = {
                 pageSize: pageSize,
                 currentPage: currentPage,
@@ -271,8 +271,13 @@ export default {
                 if(res.data.code === 200){
                     let classRes = res.data.data;
                     this.totalCount = classRes.total;
-                    this.tableData = classRes.classList;
-                    this.currentPage = 1;
+                    this.tableData = classRes.classList || [];
+                    this.currentPage = val || 1;
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -299,7 +304,7 @@ export default {
                     let params = {
                         classIdList: classIdList
                     }
-                    console.log(params);
+                    // console.log(params);
                     axios
                     .post('api/classInfo/daleteClassList', params)
                     .then(res => {
@@ -308,6 +313,11 @@ export default {
                             this.$message({
                                 type: 'success',
                                 message: '删除成功!'
+                            });
+                        } else {
+                            this.$message({
+                                type: 'warning',
+                                message: `数据库操作失败错误代码${res.data.code}`
                             });
                         }
                     })
@@ -339,6 +349,11 @@ export default {
                     this.$message({
                         message: `添加成功`,
                         type: 'success'
+                    });
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
                     });
                 }
             })
@@ -385,6 +400,11 @@ export default {
                                         message: '输入的教师ID或者课程ID内容不存在'
                                     });
                                 }
+                            } else {
+                                this.$message({
+                                    type: 'warning',
+                                    message: `数据库操作失败错误代码${resCourse.data.code}`
+                                });
                             }
                         })
                         .catch(err => {
@@ -394,6 +414,11 @@ export default {
                                 type: 'error'
                             });
                         })
+                    } else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${resuser.data.code}`
+                        });
                     }
                 })
                 .catch(err => {
@@ -423,8 +448,16 @@ export default {
             axios
             .post('/api/classInfo/queryByFilter', params)
             .then(res => {
-                this.tableData = res.data.data.courseList;
-                this.totalCount = res.data.data.total;
+                if(res.data.code === 200) {
+                    this.tableData = res.data.data.courseList || [];
+                    this.totalCount = res.data.data.total;
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
+                
             })
             .catch(err => {
                 console.log(err);
@@ -518,7 +551,12 @@ export default {
                     // console.log(res)
                     // 前端修改用户状态
                     this.tableData[index].status = row.status === '可用' ? '不可用' : '可用';
-                }
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                } 
             })
             .catch(err => {
                 this.$message({
@@ -533,7 +571,7 @@ export default {
             console.log(`当前页: ${val}`);
             let currentPage = val;
             if(this.tagEmpty) {
-                this.initClassInfo(this.pageSize, currentPage);
+                this.initClassInfo(this.pageSize, currentPage,val);
             } else {
                 let params = {
                     filter: this.filter,

@@ -168,6 +168,11 @@ export default {
                 if(res.data.code === 200){
                     this.college = res.data.data || [];
                     // console.log(this.college);
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -186,7 +191,12 @@ export default {
             .post('/api/basicInfo/queryMajor',collegeId)
             .then(res => {
                 if(res.data.code === 200){
-                    this.major = res.data.data;
+                    this.major = res.data.data || [];
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -219,8 +229,13 @@ export default {
             .post('/api/courseInfo/queryCourseById',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    let course = res.data.data.course[0];
+                    let course = res.data.data.course[0] || {};
                     this.form = course;
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
@@ -245,6 +260,11 @@ export default {
                     this.$message({
                         message: `修改成功`,
                         type: 'success'
+                    });
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
                     });
                 }
             })
@@ -274,6 +294,11 @@ export default {
                     // console.log(res)
                     // 前端修改用户状态
                      this.form.status = this.form.status === '可用' ? '不可用' : '可用';
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
                 }
             })
             .catch(err => {
