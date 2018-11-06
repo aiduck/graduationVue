@@ -45,7 +45,7 @@
                             v-if="value.inputType === 3"
                             v-model="filter[key]"
                             :fetch-suggestions="querySearch"
-                            placeholder="请输入内容"
+                             :placeholder="placeholderFilter(0, value.label)"
                             @select="handleSelect"
                         ></el-autocomplete>
                     </el-form-item>
@@ -87,12 +87,16 @@ export default {
             return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
             };
         },
-        loadAll() {
-            return [
-                { "value": "2015级"},
-                { "value": "2016级"},
-                { "value": "2017级"},
-            ];
+        loadAll(obj) {
+            if(obj === undefined) {
+                return [
+                    { "value": "2015级"},
+                    { "value": "2016级"},
+                    { "value": "2017级"},
+                ]
+            } else {
+                return obj;
+            }
         },
         handleSelect(item) {
             console.log(item);

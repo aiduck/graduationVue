@@ -91,6 +91,24 @@ export default new Router({
           component: resolve => require(['../components/page/classMemeberInfo.vue'], resolve),
           meta: { title: '班级成员信息' }
         },
+        {
+          // 项目案例库信息
+          path: '/projectInfo',
+          component: resolve => require(['../components/page/projectInfo.vue'], resolve),
+          meta: { title: '项目案例库信息' }
+        },
+        {
+          // 项目案例库详情
+          path: '/projectDetailInfo/:projectId/:isCheck',
+          component: resolve => require(['../components/page/projectInfoDetail.vue'], resolve),
+          meta: { title: '项目案例库详情' }
+        },
+        {
+          // 项目组
+          path: '/projectTeamInfo',
+          component: resolve => require(['../components/page/projectTeamInfo.vue'], resolve),
+          meta: { title: '项目组' }
+        },
       ]
     },
     {

@@ -80,7 +80,7 @@
                         index: '/courseInfo',
                         title: '课程信息',
                     },
-                     {
+                    {
                         icon: 'el-icon-lx-tag',
                         index: '5',
                         title: '班级信息',
@@ -92,6 +92,21 @@
                             {
                                 index: '/classMemeberInfo',
                                 title: '班级成员信息',
+                            },
+                        ]
+                    },
+                    {
+                        icon: 'el-icon-lx-file',
+                        index: '6',
+                        title: '项目信息',
+                        subs: [
+                            {
+                                index: '/projectInfo',
+                                title: '项目案例库信息',
+                            },
+                            {
+                                index: '/projectTeamInfo',
+                                title: '项目组',
                             },
                         ]
                     },

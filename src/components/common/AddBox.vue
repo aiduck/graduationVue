@@ -15,6 +15,12 @@
                             v-model="addForm[key]" 
                             :placeholder="placeholderFilter(value.inputType, value.label)">
                         </el-input>
+                        <el-input 
+                            v-if="value.inputType === 0.1"
+                            v-model="addSelectShow" 
+                            :disabled="value.disabled"
+                            :placeholder="placeholderFilter(value.inputType, value.label)">
+                        </el-input>
                         <el-select
                             v-if="value.inputType === 1"
                             v-model="addForm[key]"
@@ -45,9 +51,17 @@
                             v-if="value.inputType === 3"
                             v-model="addForm[key]"
                             :fetch-suggestions="querySearch"
-                            placeholder="请输入内容"
+                            :placeholder="placeholderFilter(0, value.label)"
                             @select="handleSelect"
                         ></el-autocomplete>
+                        <el-input
+                        type="textarea"
+                        v-if="value.inputType === 4"
+                        v-model="addForm[key]"
+                        :placeholder="placeholderFilter(0, value.label)"
+                        :maxlength="value.maxlength">
+                        </el-input>
+
                     </el-form-item>
                 </el-col>
             </el-row>
@@ -65,7 +79,8 @@ export default {
         "show",
         "rules",
         "tmpl",
-        "valueLabelMap"
+        "valueLabelMap",
+        "addSelectShow"
     ],
     data() {
         return {
@@ -79,6 +94,9 @@ export default {
         show(val) {
             console.log("添加框可见状态改变", val);
             this.visible = val;
+        },
+        addSelectShow(val) {
+            console.log(val);
         }
     },
     mounted() {
@@ -96,12 +114,16 @@ export default {
             return (restaurant.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
             };
         },
-        loadAll() {
-            return [
-                { "value": "2015级"},
-                { "value": "2016级"},
-                { "value": "2017级"},
-            ];
+        loadAll(obj) {
+            if(obj === undefined) {
+                return [
+                    { "value": "2015级"},
+                    { "value": "2016级"},
+                    { "value": "2017级"},
+                ]
+            } else {
+                return obj;
+            }
         },
         handleSelect(item) {
             console.log(item);

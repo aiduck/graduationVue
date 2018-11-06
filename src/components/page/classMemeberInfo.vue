@@ -2,7 +2,7 @@
     <div class="wrap">
          <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-profile"></i> 学生基本信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-tag"></i>班级成员信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <!-- 表格 -->
