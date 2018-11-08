@@ -845,7 +845,7 @@ export default {
         },
         inputClear(type) {
             // 筛选框中下拉框handleClear清除
-            // console.log(type);
+            console.log(type);
             if (type == "学院") {
                 this.filterTmpl.major_id.disabled = true;
                 this.filterTmpl.aclass_id.disabled = true;

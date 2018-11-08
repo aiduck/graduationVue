@@ -36,7 +36,7 @@
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="课程ID">
-                                 <el-select
+                                <el-select
                                     v-model="form.project.course_id"
                                     :disabled="ischeck"
                                     clearable

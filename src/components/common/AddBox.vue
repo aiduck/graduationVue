@@ -17,7 +17,7 @@
                         </el-input>
                         <el-input 
                             v-if="value.inputType === 0.1"
-                            v-model="addSelectShow" 
+                            v-model="value.addSelectShow" 
                             :disabled="value.disabled"
                             :placeholder="placeholderFilter(value.inputType, value.label)">
                         </el-input>
@@ -79,8 +79,7 @@ export default {
         "show",
         "rules",
         "tmpl",
-        "valueLabelMap",
-        "addSelectShow"
+        "valueLabelMap"
     ],
     data() {
         return {
@@ -95,9 +94,6 @@ export default {
             console.log("添加框可见状态改变", val);
             this.visible = val;
         },
-        addSelectShow(val) {
-            console.log(val);
-        }
     },
     mounted() {
       this.restaurants = this.loadAll();

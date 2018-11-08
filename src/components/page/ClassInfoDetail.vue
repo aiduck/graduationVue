@@ -316,7 +316,7 @@ export default {
         },
         // 去修改界面
         leaveFor() {
-            this.$router.push(`/classInfo/${row.class_id}/isedit`);
+            this.$router.push(`/classInfo/${this.$route.params.classId}/isedit`);
         },
         // 修改状态
         handleDelete() {

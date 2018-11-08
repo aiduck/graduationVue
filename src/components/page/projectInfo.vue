@@ -36,7 +36,6 @@
                     :tmpl="infoAddTmpl"
                     :valueLabelMap="valueLabelMap"
                     :rules="infoAddRules"
-                    :addSelectShow="addSelectShow"
                     @sendInfo="receiveInfo"
                     @inputChange="inputChange"
                     @handleClear="inputClear"/>
@@ -55,8 +54,6 @@
                     </el-form>
                     </template>
                 </el-table-column>
-
-
                 <el-table-column v-for="(value, key) in keyFormatMap"
                        :label="value"
                        :key='key'
@@ -154,7 +151,7 @@ export default {
                     inputType: 0 // 0 代表 input
                 },
                 course_id: {
-                    label: "课程ID",
+                    label: "课程Id",
                     inputType: 1
                 },
                 status: {
@@ -188,6 +185,7 @@ export default {
                     label: "课程名称",
                     inputType: 0.1, // 0.1 表示只能看不能输入的input
                     disabled: true,
+                    addSelectShow:''
                 },
                 status: {
                     label: "状态",
@@ -218,7 +216,7 @@ export default {
                     { required: true, message: "请选择项目状态", trigger: "blur" }
                 ]
             },
-            addSelectShow: '',
+            // addSelectShow: '',
         }
     },
     created() {
@@ -419,11 +417,7 @@ export default {
                 .post("/api/courseInfo/queryByIdForName",params)
                 .then(res => {
                     if(res.data.code === 200) {
-                       this.addSelectShow = res.data.data.course[0].course_name;
-                    //    this.addSelectShow = {
-                    //        value:res.data.data.course[0].course_name,
-                    //        label:'course_id'
-                    //    }
+                       this.infoAddTmpl.course_name.addSelectShow = res.data.data.course[0].course_name;
                     } else {
                         this.$message({
                             type: 'warning',

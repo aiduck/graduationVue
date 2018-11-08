@@ -36,7 +36,6 @@
                     :tmpl="infoAddTmpl"
                     :valueLabelMap="valueLabelMap"
                     :rules="infoAddRules"
-                    :addSelectShow="addSelectShow"
                     @sendInfo="receiveInfo"
                     @inputChange="inputChange"
                     @handleClear="inputClear"/>
@@ -77,7 +76,7 @@
                         <el-button
                             size="small"
                             type="danger"
-                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status == '可用' ? '禁用' : '启用'}}</el-button>
+                            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -111,15 +110,16 @@ export default {
             // 表格头部
             keyFormatMap: {
                 // 格式化标签映射表
-                project_id: "项目ID",
+                team_id: "项目组ID",
+                team_name: "项目组名称",
+                class_name: "教学班级名称",
                 project_name: "项目名称",
-                course_id: "课程ID",
-                course_name: "课程名称",
-                status: "项目状态"
+                username:"负责人",
             },
             expandFormatMap: {
-                project_content: "项目内容",
-                target: "项目目标",
+                class_id: "教学班级ID",
+                user_id: "负责人ID",
+                project_id: "教学班级ID"
             },
             hideMap: {},
             // 表格页码参数
@@ -132,93 +132,101 @@ export default {
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
             valueLabelMap:{
-                course_id: [],
-                status: [
-                    {
-                        value: "可用",
-                        label: "可用"
-                    },
-                    {
-                        value: "不可用",
-                        label: "不可用"
-                    }
-                ],
+                class_id: [],
+                user_id: [],
+                project_id: [],
             },
             filterTmpl: {
-                project_id: {
-                    label: "项目ID",
+                team_id: {
+                    label: "项目组ID",
                     inputType: 0 // 0 代表 input
                 },
-                project_name: {
-                    label: "项目名称",
+                team_name: {
+                    label: "项目组名称",
                     inputType: 0 // 0 代表 input
                 },
-                course_id: {
-                    label: "课程ID",
+                class_id: {
+                    label: "教学班级ID",
                     inputType: 1
                 },
-                status: {
-                    label: "状态",
+                user_id: {
+                    label: "用户Id",
+                    inputType: 1 // 1 代表下拉框
+                },
+                project_id: {
+                    label: "筛选项目Id",
                     inputType: 1 // 1 代表下拉框
                 }
             },
             filter: {
                 //搜索条件
-                project_id: "", 
-                project_name: "", 
-                course_id: "", 
-                status: "",
+                team_id: "", 
+                team_name: "", 
+                class_id: "", 
+                user_id: "",
+                project_id: "",
             },
             // 添加表格参数
             showInfoAdd: false,
             infoAddTmpl: {
+                team_id: {
+                    label: "项目组ID",
+                    inputType: 0 // 0 代表 input
+                },
+                team_name: {
+                    label: "项目组名称",
+                    inputType: 0 // 0 代表 input
+                },
+                class_id: {
+                    label: "教学班级ID",
+                    inputType: 1 // 1 代表下拉框
+                },
+                class_name: {
+                    label: "教学班级名称",
+                    inputType: 0.1, // 0.1 表示只能看不能输入的input
+                    disabled: true,
+                    addSelectShow:''
+                },
+                user_id: {
+                    label: "学生ID",
+                    inputType: 1, // 1 代表下拉框
+                    disabled: true,
+                },
+                username: {
+                    label: "学生名",
+                    inputType: 0.1, // 0.1 表示只能看不能输入的input
+                    disabled: true,
+                    addSelectShow: ''
+                },
                 project_id: {
                     label: "项目ID",
-                    inputType: 0 // 0 代表 input
+                    inputType: 1, // 1 代表下拉框
+                    disabled: true,
                 },
                 project_name: {
                     label: "项目名称",
-                    inputType: 0 // 0 代表 input
-                },
-                course_id: {
-                    label: "课程ID",
-                    inputType: 1 // 1 代表下拉框
-                },
-                course_name: {
-                    label: "课程名称",
                     inputType: 0.1, // 0.1 表示只能看不能输入的input
                     disabled: true,
-                },
-                status: {
-                    label: "状态",
-                    inputType: 1 // 1 代表下拉框
-                },
-                project_content: {
-                    label: "项目内容",
-                    inputType: 4,
-                    maxlength: 500
-                },
-                target: {
-                    label: "项目目标",
-                    inputType: 4,
-                    maxlength: 100
+                    addSelectShow:''
                 },
             },
             infoAddRules: {
+                team_id: [
+                    { required: true, message: "请输入项目组ID", trigger: "blur" }
+                ],
+                team_name: [
+                    { required: true, message: "请输入项目组名称", trigger: "blur" }
+                ],
+                class_id: [
+                    { required: true, message: "请输入教学班级ID", trigger: "blur" }
+                ],
+                user_id: [
+                    { required: true, message: "请选择用户ID", trigger: "blur" }
+                ],
                 project_id: [
-                    { required: true, message: "请输入项目ID", trigger: "blur" }
-                ],
-                project_name: [
-                    { required: true, message: "请输入项目名称", trigger: "blur" }
-                ],
-                course_id: [
-                    { required: true, message: "请输入课程ID", trigger: "blur" }
-                ],
-                status: [
-                    { required: true, message: "请选择项目状态", trigger: "blur" }
+                    { required: true, message: "请选择项目ID", trigger: "blur" }
                 ]
             },
-            addSelectShow: '',
         }
     },
     created() {
@@ -250,22 +258,22 @@ export default {
     mounted() {
         this.imFile = document.getElementById('imFile');
         this.outFile = document.getElementById('downlink')
-        this.initCourseInfo();
-        this.initProject(this.pageSize,this.currentPage);
+        this.initClassInfo();
+        this.initProjectTeam(this.pageSize,this.currentPage);
     },
     methods: {
-        initProject(pageSize, currentPage, val) {
+        initProjectTeam(pageSize, currentPage, val) {
             let params = {
                 pageSize: pageSize,
                 currentPage: currentPage
             }
             axios
-            .get('/api/projectInfo/queryLimitProject',{params})
+            .get('/api/projectTeam/queryLimitTeam',{params})
             .then(res => {
                 if(res.data.code === 200) {
-                    let projectRes = res.data.data;
-                    this.totalCount = projectRes.total;
-                    this.tableData = projectRes.projectList || [];
+                    let teamRes = res.data.data;
+                    this.totalCount = teamRes.total;
+                    this.tableData = teamRes.teamList || [];
                     this.currentPage = val || 1;
                 }  else {
                     this.$message({
@@ -282,22 +290,22 @@ export default {
                 });
             })
         },
-        // 初始化课程id下拉框
-        initCourseInfo() {
+        // 初始化教学班级id下拉框
+        initClassInfo() {
             axios
-            .get('/api/courseInfo/queryAll')
+            .get('/api/classInfo/queryAll')
             .then(res => {
                 if(res.data.code === 200) {
-                    if(res.data.data.courseList) {
-                        res.data.data.courseList.map((item) => {
-                            this.valueLabelMap.course_id.push({
-                                value: item.course_id,
-                                label: item.course_id,
+                    if(res.data.data.classList) {
+                        res.data.data.classList.map((item) => {
+                            this.valueLabelMap.class_id.push({
+                                value: item.class_id,
+                                label: item.class_id,
                                 disabled: item.status === '可用'?false:true
                             })
                         })
                     }
-                    // this.valueLabelMap.course_id = res.data.data.courseList || []
+                    // console.log(this.valueLabelMap.class_id);
                 } else {
                     this.$message({
                         type: 'warning',
@@ -320,11 +328,12 @@ export default {
         receiveInfo(addform) {
             this.showInfoAdd = false;
             if (addform !== undefined) {
+                // console.log(addform);
                 axios
-                .post("/api/projectInfo/insterProject",addform)
+                .post("/api/projectTeam/insterProjectTeam",addform)
                 .then(res => {
                     if(res.data.code === 200) {
-                        this.initProject(this.pageSize, this.currentPage)
+                        this.initProjectTeam(this.pageSize, this.currentPage)
                         this.$message({
                             message: `添加成功`,
                             type: 'success'
@@ -362,10 +371,10 @@ export default {
         },
         filterData(params) {
             axios
-            .post('/api/projectInfo/queryByFilter', params)
+            .post('/api/projectTeam/queryByFilter', params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.tableData = res.data.data.projectList || [];
+                    this.tableData = res.data.data.teamList || [];
                     this.totalCount = res.data.data.total;
                 } else {
                     this.$message({
@@ -394,10 +403,11 @@ export default {
                 this.filterData(params);
             } else if (this.isFirstFilter && filter === undefined) {
                 let  filter = {
-                    project_id: "", 
-                    project_name: "", 
-                    course_id: "", 
-                    status: "",
+                    team_id: "", 
+                    team_name: "", 
+                    class_id: "", 
+                    user_id: "",
+                    project_id: "",
                 }
                 this.filter = filter;
             }
@@ -410,60 +420,20 @@ export default {
             value = value.toString();
             return Object.assign({}, this.keyFormatMap, this.expandFormatMap, this.hideMap)[value];
         },
-        async inputChange(oldObj, newObj) {
-            if(oldObj && newObj.label === '课程ID') {
-                let params = {
-                    course_id: oldObj
-                };
-                axios
-                .post("/api/courseInfo/queryByIdForName",params)
-                .then(res => {
-                    if(res.data.code === 200) {
-                       this.addSelectShow = res.data.data.course[0].course_name;
-                    //    this.addSelectShow = {
-                    //        value:res.data.data.course[0].course_name,
-                    //        label:'course_id'
-                    //    }
-                    } else {
-                        this.$message({
-                            type: 'warning',
-                            message: `数据库操作失败错误代码${res.data.code}`
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                    this.$message({
-                        message: `链接发生错误`,
-                        type: 'error'
-                    });
-                })
-            }
-        },
-        inputClear(type) {},
-        // 更多按钮
-        handleMore(index, row) {
-            this.$router.push(`/projectDetailInfo/${row.project_id}/ischeck`);
-        },
-        // 编辑按钮
-        handleEdit(index, row) {
-            this.$router.push(`/projectDetailInfo/${row.project_id}/isedit`);
-        },
-        // 禁用按钮
-        handleDelete(index, row) {
-            let status = row.status === '可用' ? '不可用' : '可用';
-            let project_id = row.project_id;
-            let params = {
-                status: status,
-                project_id: project_id
-            }
+        queryStuByClassID(params) {
             axios
-            .post('/api/projectInfo/updateProjectStatus', params)
+            .post("/api/classInfo/queryStuByClassId",params)
             .then(res => {
                 if(res.data.code === 200) {
-                    // console.log(res)
-                    // 前端修改用户状态
-                    this.tableData[index].status = row.status === '可用' ? '不可用' : '可用';
+                    // console.log(res);  
+                    this.infoAddTmpl.user_id.disabled = false;
+              
+                    res.data.data.studentId.map((item) => {
+                        this.valueLabelMap.user_id.push({
+                            value: item.user_id,
+                            label: item.user_id,
+                        });
+                    })
                 } else {
                     this.$message({
                         type: 'warning',
@@ -472,12 +442,142 @@ export default {
                 }
             })
             .catch(err => {
+                console.log(err);
                 this.$message({
                     message: `链接发生错误`,
                     type: 'error'
                 });
             })
+        },
+        queryProByCourseID(params) {
+            axios
+            .post("/api/projectInfo/queryProByCourseID",params)
+            .then(res => {
+                if(res.data.code === 200) {
+                    this.infoAddTmpl.project_id.disabled = false;
+                    
+                    res.data.data.projectIdList.map((item) => {
+                        this.valueLabelMap.project_id.push({
+                            value: item.project_id,
+                            label: item.project_id,
+                        });
+                    })
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        queryByIDForName(url,params,type) {
+            axios
+            .post(url,params)
+            .then(res => {
+                if(res.data.code === 200) {
+                    if(type === 'class') {
+                         this.infoAddTmpl.class_name.addSelectShow = res.data.data.classes[0].class_name;
+                        let params2 = {
+                            course_id: res.data.data.classes[0].course_id
+                        }
+                        this.queryStuByClassID(params);
+                        this.queryProByCourseID(params2);
+                    } else if(type === 'student') {
+                        this.infoAddTmpl.username.addSelectShow = res.data.data.user[0].username;
+                    } else if(type === 'project') {
+                        this.infoAddTmpl.project_name.addSelectShow = res.data.data.project[0].project_name;
+                    }
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        async inputChange(oldObj, newObj) {
+            if(newObj.label === '教学班级ID') {
+                this.valueLabelMap.project_id = [];
+                this.valueLabelMap.user_id = [];
+            }
+            if(oldObj && newObj.label === '教学班级ID') {
+                let params = {
+                    class_id: oldObj
+                };
+                let url = '/api/classInfo/queryByIdForName';
+                this.queryByIDForName(url,params,'class');
+            } else  if(oldObj && newObj.label === '学生ID') {
+                let params = {
+                    user_id: oldObj
+                };
+                let url = '/api/studentInfo/queryByIdForName';
+                this.queryByIDForName(url,params,'student');
+            } else  if(oldObj && newObj.label === '项目ID') {
+                let params = {
+                    project_id: oldObj
+                };
+                let url = '/api/projectInfo/queryByIdForName';
+                this.queryByIDForName(url,params,'project');
+            }
+        },
+        inputClear(type) {},
+        // 更多按钮
+        handleMore(index, row) {
+            this.$router.push(`/projectTeamDetail/${row.team_id}/ischeck`);
+        },
+        // 编辑按钮
+        handleEdit(index, row) {
+            this.$router.push(`/projectTeamDetail/${row.team_id}/isedit`);
+        },
+        // 删除按钮
+        handleDelete(index, row) {
 
+            this.$confirm('删除团队的同时也将删除团队的成员信息, 是否继续?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                let params = {
+                    team_id: row.team_id
+                }
+                axios
+                .post('/api/projectTeam/deleteTeam', params)
+                .then(res => {
+                    if(res.data.code === 200) {
+                        this.initProjectTeam(this.pageSize,this.currentPage);
+                    } else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
+                    }
+                })
+                .catch(err => {
+                    this.$message({
+                        message: `链接发生错误`,
+                        type: 'error'
+                    });
+                })
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });          
+            });
         },
         // 分页操作按钮
         handleCurrentChange(val) {

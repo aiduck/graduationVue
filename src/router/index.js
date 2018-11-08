@@ -109,6 +109,12 @@ export default new Router({
           component: resolve => require(['../components/page/projectTeamInfo.vue'], resolve),
           meta: { title: '项目组' }
         },
+        {
+          // 项目组详细信息
+          path: '/projectTeamDetail/:teamId/:isCheck',
+          component: resolve => require(['../components/page/projectTeamDetail.vue'], resolve),
+          meta: { title: '项目组详细信息' }
+        },
       ]
     },
     {

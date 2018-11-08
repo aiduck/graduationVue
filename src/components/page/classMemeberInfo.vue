@@ -574,11 +574,19 @@ export default {
                 .post('/api/classInfo/insterClassMemeber', addform)
                 .then(res => {
                     if(res.data.code === 200) {
-                        this.$message({
-                            message: `添加成功`,
-                            type: 'success'
-                        });
-                        this.initUserInfo(this.pageSize, this.currentPage)
+                        if(res.data.data.warningCount === 1) {
+                            this.$message({
+                                message: `请检查用户或者教学班级是否存在`,
+                                type: 'error'
+                            });
+                        } else {
+                            this.$message({
+                                message: `添加成功`,
+                                type: 'success'
+                            });
+                            this.initUserInfo(this.pageSize, this.currentPage)
+                        }
+                        
                     } else {
                         this.$message({
                             type: 'warning',
