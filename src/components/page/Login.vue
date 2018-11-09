@@ -12,7 +12,7 @@
                 <div class="login-btn">
                     <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
                 </div>
-                <p style="font-size:12px;line-height:30px;color:#999;">Tips : 用户名和密码随便填。</p>
+                <p style="font-size:12px;line-height:30px;color:#999;">Tips : 上下分别是用户名和密码</p>
             </el-form>
         </div>
     </div>
@@ -23,8 +23,8 @@
         data: function(){
             return {
                 ruleForm: {
-                    username: 'admin',
-                    password: '123123'
+                    username: '',
+                    password: ''
                 },
                 rules: {
                     username: [
@@ -42,6 +42,7 @@
                     if (valid) {
                         localStorage.setItem('ms_username',this.ruleForm.username);
                         this.$router.push('/');
+                        console.log(this.ruleForm)
                     } else {
                         console.log('error submit!!');
                         return false;

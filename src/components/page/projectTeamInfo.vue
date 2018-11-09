@@ -110,13 +110,15 @@ export default {
             // 表格头部
             keyFormatMap: {
                 // 格式化标签映射表
-                team_id: "项目组ID",
                 team_name: "项目组名称",
+                course_name: "课程名称",
                 class_name: "教学班级名称",
                 project_name: "项目名称",
-                username:"负责人",
+                username: "负责人",
             },
             expandFormatMap: {
+                team_id: "项目组ID",
+                course_id: "课程ID",
                 class_id: "教学班级ID",
                 user_id: "负责人ID",
                 project_id: "教学班级ID"
@@ -132,9 +134,10 @@ export default {
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
             valueLabelMap:{
-                class_id: [],
-                user_id: [],
+                course_id:[],  // 课程决定有哪些教学班级，哪些项目
+                class_id: [],  // 教学班级决定那些人可以为负责人
                 project_id: [],
+                user_id: [],
             },
             filterTmpl: {
                 team_id: {
@@ -145,16 +148,20 @@ export default {
                     label: "项目组名称",
                     inputType: 0 // 0 代表 input
                 },
+                course_id: {
+                    label: "筛选课程ID",
+                    inputType: 1
+                },
                 class_id: {
                     label: "教学班级ID",
                     inputType: 1
                 },
                 user_id: {
-                    label: "用户Id",
+                    label: "用户ID",
                     inputType: 1 // 1 代表下拉框
                 },
                 project_id: {
-                    label: "筛选项目Id",
+                    label: "筛选项目ID",
                     inputType: 1 // 1 代表下拉框
                 }
             },
@@ -162,6 +169,7 @@ export default {
                 //搜索条件
                 team_id: "", 
                 team_name: "", 
+                course_id: "",
                 class_id: "", 
                 user_id: "",
                 project_id: "",
@@ -177,9 +185,20 @@ export default {
                     label: "项目组名称",
                     inputType: 0 // 0 代表 input
                 },
+                course_id: {
+                    label: "课程ID",
+                    inputType: 1 // 1 代表下拉框
+                },
+                course_name: {
+                    label: "课程名称",
+                    inputType: 0.1, // 1 代表下拉框
+                    disabled: true,
+                    addSelectShow:''
+                },
                 class_id: {
                     label: "教学班级ID",
-                    inputType: 1 // 1 代表下拉框
+                    inputType: 1, // 1 代表下拉框
+                    disabled: true,
                 },
                 class_name: {
                     label: "教学班级名称",
@@ -216,6 +235,9 @@ export default {
                 ],
                 team_name: [
                     { required: true, message: "请输入项目组名称", trigger: "blur" }
+                ],
+                course_id: [
+                    { required: true, message: "请输入课程ID", trigger: "blur" }
                 ],
                 class_id: [
                     { required: true, message: "请输入教学班级ID", trigger: "blur" }
@@ -258,7 +280,7 @@ export default {
     mounted() {
         this.imFile = document.getElementById('imFile');
         this.outFile = document.getElementById('downlink')
-        this.initClassInfo();
+        this.initCourseInfo();
         this.initProjectTeam(this.pageSize,this.currentPage);
     },
     methods: {
@@ -290,22 +312,21 @@ export default {
                 });
             })
         },
-        // 初始化教学班级id下拉框
-        initClassInfo() {
+        // 初始化课程id下拉框
+        initCourseInfo() {
             axios
-            .get('/api/classInfo/queryAll')
+            .get('/api/courseInfo/queryAll')
             .then(res => {
                 if(res.data.code === 200) {
-                    if(res.data.data.classList) {
-                        res.data.data.classList.map((item) => {
-                            this.valueLabelMap.class_id.push({
-                                value: item.class_id,
-                                label: item.class_id,
+                    if(res.data.data.courseList) {
+                        res.data.data.courseList.map((item) => {
+                            this.valueLabelMap.course_id.push({
+                                value: item.course_id,
+                                label: item.course_id,
                                 disabled: item.status === '可用'?false:true
                             })
                         })
                     }
-                    // console.log(this.valueLabelMap.class_id);
                 } else {
                     this.$message({
                         type: 'warning',
@@ -327,6 +348,7 @@ export default {
         },
         receiveInfo(addform) {
             this.showInfoAdd = false;
+            // console.log(addform);
             if (addform !== undefined) {
                 // console.log(addform);
                 axios
@@ -353,7 +375,6 @@ export default {
                     });
                 })
             }
-           
         },
         // 搜索按钮相关函数
         enterFilter() {
@@ -362,7 +383,7 @@ export default {
                 console.log('退出筛选');
                 this.filter = util.resetObject(this.filter);
                 // 就是没有任何条件的所有信息
-                 this.initProject(this.pageSize, this.currentPage);
+                 this.initProjectTeam(this.pageSize, this.currentPage);
             }
             else {
                 console.log('进入筛选');
@@ -405,6 +426,7 @@ export default {
                 let  filter = {
                     team_id: "", 
                     team_name: "", 
+                    course_id: "",
                     class_id: "", 
                     user_id: "",
                     project_id: "",
@@ -449,17 +471,58 @@ export default {
                 });
             })
         },
-        queryProByCourseID(params) {
+        // 添加的时候 =》可选状态的project
+        queryProByCourseID(params,type) {
             axios
             .post("/api/projectInfo/queryProByCourseID",params)
             .then(res => {
                 if(res.data.code === 200) {
                     this.infoAddTmpl.project_id.disabled = false;
+                    if(type === 'course') {
+                        res.data.data.projectIdList.map((item) => {
+                            this.valueLabelMap.project_id.push({
+                                value: item.project_id,
+                                label: item.project_id,
+                                disabled: item.is_choose === '可选'?false:true
+                            });
+                        })
+                    } else if(type === 'course_fromFilter') {
+                        res.data.data.projectIdList.map((item) => {
+                            this.valueLabelMap.project_id.push({
+                                value: item.project_id,
+                                label: item.project_id,
+                                // disabled: item.is_choose === '可选'?false:true
+                            });
+                        })
+                    }
                     
-                    res.data.data.projectIdList.map((item) => {
-                        this.valueLabelMap.project_id.push({
-                            value: item.project_id,
-                            label: item.project_id,
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        queryClassByCourseID(params) {
+            axios
+            .post("/api/classInfo/queryAllByCourse",params)
+            .then(res => {
+                if(res.data.code === 200) {
+                    this.infoAddTmpl.class_id.disabled = false;
+                    
+                    res.data.data.classId.map((item) => {
+                        this.valueLabelMap.class_id.push({
+                            value: item.class_id,
+                            label: item.class_id,
+                            disabled: item.status === '可用'?false:true
                         });
                     })
                 } else {
@@ -482,14 +545,16 @@ export default {
             .post(url,params)
             .then(res => {
                 if(res.data.code === 200) {
-                    if(type === 'class') {
-                         this.infoAddTmpl.class_name.addSelectShow = res.data.data.classes[0].class_name;
-                        let params2 = {
-                            course_id: res.data.data.classes[0].course_id
-                        }
-                        this.queryStuByClassID(params);
-                        this.queryProByCourseID(params2);
-                    } else if(type === 'student') {
+                    if(type === 'course' || type === 'course_fromFilter') {
+                        this.infoAddTmpl.course_name.addSelectShow = res.data.data.course[0].course_name;
+                        this.queryProByCourseID(params,type);
+                        this.queryClassByCourseID(params);
+                    }   
+                    else if(type === 'class') {
+                        this.infoAddTmpl.class_name.addSelectShow = res.data.data.classes[0].class_name;
+                        this.queryStuByClassID(params)
+                    } 
+                    else if(type === 'student') {
                         this.infoAddTmpl.username.addSelectShow = res.data.data.user[0].username;
                     } else if(type === 'project') {
                         this.infoAddTmpl.project_name.addSelectShow = res.data.data.project[0].project_name;
@@ -509,18 +574,36 @@ export default {
                 });
             })
         },
-        async inputChange(oldObj, newObj) {
-            if(newObj.label === '教学班级ID') {
+        async inputChange(oldObj, newObj,from) {
+            
+
+            if(newObj.label === '课程ID' || newObj.label === '筛选课程ID') {
+                this.valueLabelMap.class_id = [];
                 this.valueLabelMap.project_id = [];
                 this.valueLabelMap.user_id = [];
             }
-            if(oldObj && newObj.label === '教学班级ID') {
+            // 更具course_id 查找所有classes以及project
+            if(oldObj && newObj.label === '课程ID') {
+                let params = {
+                    course_id: oldObj
+                };
+                let url = '/api/courseInfo/queryByIdForName';
+                this.queryByIDForName(url,params,'course');
+            } else if(oldObj && newObj.label === '筛选课程ID' ){
+                let params = {
+                    course_id: oldObj
+                };
+                let url = '/api/courseInfo/queryByIdForName';
+                this.queryByIDForName(url,params,'course_fromFilter');
+            }
+            else if(oldObj && newObj.label === '教学班级ID') {
                 let params = {
                     class_id: oldObj
                 };
                 let url = '/api/classInfo/queryByIdForName';
                 this.queryByIDForName(url,params,'class');
-            } else  if(oldObj && newObj.label === '学生ID') {
+            } 
+            else  if(oldObj && newObj.label === '学生ID') {
                 let params = {
                     user_id: oldObj
                 };
@@ -545,7 +628,6 @@ export default {
         },
         // 删除按钮
         handleDelete(index, row) {
-
             this.$confirm('删除团队的同时也将删除团队的成员信息, 是否继续?', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
@@ -584,7 +666,7 @@ export default {
             console.log(`当前页: ${val}`);
             let currentPage = val;
             if(this.tagEmpty) {
-                this.initProject(this.pageSize, currentPage,val);
+                this.initProjectTeam(this.pageSize, currentPage,val);
             } else {
                 let params = {
                     filter: this.filter,

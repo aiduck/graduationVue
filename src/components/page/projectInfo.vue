@@ -74,7 +74,8 @@
                         <el-button
                             size="small"
                             type="danger"
-                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status == '可用' ? '禁用' : '启用'}}</el-button>
+                            :disabled="scope.row.is_choose === '不可选' ?true:false"
+                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status === '可用' ? '禁用' : '启用'}}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -110,11 +111,13 @@ export default {
                 // 格式化标签映射表
                 project_id: "项目ID",
                 project_name: "项目名称",
-                course_id: "课程ID",
+               
                 course_name: "课程名称",
-                status: "项目状态"
+                status: "项目状态",
+                is_choose: "是否可选"
             },
             expandFormatMap: {
+                course_id: "课程ID",
                 project_content: "项目内容",
                 target: "项目目标",
             },
@@ -140,6 +143,16 @@ export default {
                         label: "不可用"
                     }
                 ],
+                is_choose:[
+                    {
+                        value: "可选",
+                        label: "可选"
+                    },
+                    {
+                        value: "不可选",
+                        label: "不可选"
+                    }
+                ],
             },
             filterTmpl: {
                 project_id: {
@@ -157,6 +170,10 @@ export default {
                 status: {
                     label: "状态",
                     inputType: 1 // 1 代表下拉框
+                },
+                is_choose: {
+                    label: "是否可选",
+                    inputType: 1 // 1 代表下拉框
                 }
             },
             filter: {
@@ -165,6 +182,7 @@ export default {
                 project_name: "", 
                 course_id: "", 
                 status: "",
+                is_choose: "",
             },
             // 添加表格参数
             showInfoAdd: false,
@@ -191,6 +209,10 @@ export default {
                     label: "状态",
                     inputType: 1 // 1 代表下拉框
                 },
+                is_choose: {
+                    label: "是否可选",
+                    inputType: 1 // 1 代表下拉框
+                },
                 project_content: {
                     label: "项目内容",
                     inputType: 4,
@@ -211,9 +233,6 @@ export default {
                 ],
                 course_id: [
                     { required: true, message: "请输入课程ID", trigger: "blur" }
-                ],
-                status: [
-                    { required: true, message: "请选择项目状态", trigger: "blur" }
                 ]
             },
             // addSelectShow: '',
@@ -316,6 +335,7 @@ export default {
             this.showInfoAdd = true;
         },
         receiveInfo(addform) {
+            // console.log(addform);
             this.showInfoAdd = false;
             if (addform !== undefined) {
                 axios

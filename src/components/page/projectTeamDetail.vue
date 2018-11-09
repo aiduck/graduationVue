@@ -72,12 +72,30 @@
                         </el-col>
                     </el-row>
                     <el-row>
+                         <el-col :span="12">
+                            <el-form-item label="课程ID">
+                                <el-select
+                                    v-model="form.team.course_id"
+                                    :disabled="ischeck"
+                                    clearable
+                                    @change="handleCourseChange(form.team.course_id,'course')"
+                                    @clear="handleClear(form.team.course_id,'course')">
+                                        <el-option 
+                                            v-for="item in course_id"
+                                            :key="item.value"
+                                            :label="item.label"
+                                            :value="item.value"
+                                            :disabled="item.disabled">
+                                        </el-option>
+                                </el-select>
+                            </el-form-item>
+                        </el-col>
                         <el-col :span="12">
                             <el-form-item label="教学班级ID">
                                 <!-- 用练级的select下拉框 -->
                                 <el-select
                                     v-model="form.team.class_id"
-                                    :disabled="ischeck"
+                                    :disabled="isSelectCouserId"
                                     clearable
                                     @change="handleCourseChange(form.team.class_id,'class')"
                                     @clear="handleClear(form.team.class_id,'class')">
@@ -91,6 +109,9 @@
                                 </el-select>
                             </el-form-item>
                         </el-col>
+                        
+                    </el-row>
+                    <el-row>
                         <el-col :span="12">
                             <el-form-item label="负责人ID">
                                  <el-select
@@ -109,13 +130,11 @@
                                 </el-select>
                             </el-form-item>
                         </el-col>
-                    </el-row>
-                    <el-row>
                         <el-col :span="12">
                             <el-form-item label="项目ID">
                                 <el-select
                                     v-model="form.team.project_id"
-                                    :disabled="isSelectClassId"
+                                    :disabled="isSelectCouserId"
                                     clearable
                                     @change="handleCourseChange(form.team.project_id,'project')"
                                     @clear="handleClear(form.team.project_id,'project')">
@@ -234,6 +253,7 @@ export default {
                 team: {
                     team_id: '',
                     team_name: '',
+                    course_id:'',
                     class_id: '',
                     user_id: '',
                     project_id: '',
@@ -256,9 +276,11 @@ export default {
                 }
                 
             },
+            course_id:[],
             class_id: [],
             user_id:[],
             project_id:[],
+            isSelectCouserId: true,
             isSelectClassId: true,
             ischeck: false,
         }
@@ -266,7 +288,7 @@ export default {
     mounted() {
         this.ischeck = this.$route.params.isCheck === 'ischeck' ? true :false;
         this.initTeamInfo();
-        this.initClassInfo();
+        this.initCourseInfo();
     },
     watch:{
         // 监听路由变化
@@ -275,17 +297,17 @@ export default {
         }
     },
     methods: {
-        // 初始化教学班级id下拉框
-        initClassInfo() {
+        // 初始化课程id下拉框
+        initCourseInfo() {
             axios
-            .get('/api/classInfo/queryAll')
+            .get('/api/courseInfo/queryAll')
             .then(res => {
                 if(res.data.code === 200) {
-                    if(res.data.data.classList) {
-                        res.data.data.classList.map((item) => {
-                            this.class_id.push({
-                                value: item.class_id,
-                                label: item.class_id,
+                    if(res.data.data.courseList) {
+                        res.data.data.courseList.map((item) => {
+                            this.course_id.push({
+                                value: item.course_id,
+                                label: item.course_id,
                                 disabled: item.status === '可用'?false:true
                             })
                         })
@@ -310,7 +332,7 @@ export default {
             .post("/api/classInfo/queryStuByClassId",params)
             .then(res => {
                 if(res.data.code === 200) {
-
+                    this.isSelectClassId = false;
                     res.data.data.studentId.map((item) => {
                         this.user_id.push({
                             value: item.user_id,
@@ -337,11 +359,13 @@ export default {
             .post("/api/projectInfo/queryProByCourseID",params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.isSelectClassId = false;
+                       this.isSelectCouserId = false;
+                    
                     res.data.data.projectIdList.map((item) => {
                         this.project_id.push({
                             value: item.project_id,
                             label: item.project_id,
+                            disabled: item.is_choose === '可选'?false:true
                         });
                     })
                 } else {
@@ -359,18 +383,20 @@ export default {
                 });
             })
         },
-        queryByIDForName(params) {
+        queryClassByCourseID(params) {
             axios
-            .post('/api/classInfo/queryByIdForName',params)
+            .post("/api/classInfo/queryAllByCourse",params)
             .then(res => {
                 if(res.data.code === 200) {
-                   
-                    let params2 = {
-                        course_id: res.data.data.classes[0].course_id
-                    }
-                    this.queryStuByClassID(params);
-                    this.queryProByCourseID(params2);
+                    this.isSelectCouserId = false;
                     
+                    res.data.data.classId.map((item) => {
+                        this.class_id.push({
+                            value: item.class_id,
+                            label: item.class_id,
+                            disabled: item.status === '可用'?false:true
+                        });
+                    })
                 } else {
                     this.$message({
                         type: 'warning',
@@ -430,19 +456,26 @@ export default {
                 });
             })
         },
-        // 修改coures的id
+        // 下拉框修改内容
         handleCourseChange(val,type) {
             console.log(val,type)
-            if(type === 'class') {
+            if(type === 'course') {
+                this.class_id = [];
                 this.project_id = [];
                 this.user_id = [];
             }
-            if(val && type === 'class') {
+            if(val && type === 'course') {
+                let params = {
+                    course_id: val
+                };
+                this.queryProByCourseID(params);
+                this.queryClassByCourseID(params);
+            } else if(val && type === 'class') {
                 let params = {
                     class_id: val
                 };
                 this.updateClassInfo(params);
-                this.queryByIDForName(params);
+                this.queryStuByClassID(params);
             }
             else if(val && type === 'project') {
                 let params = {
@@ -491,7 +524,7 @@ export default {
                    ...this.form.team
                 }
             }
-            // console.log(params);
+            console.log(params);
             axios
             .post('/api/projectTeam/updateProjectTeamInfo',params)
             .then(res => {
@@ -516,8 +549,7 @@ export default {
         },
         // 去修改界面
         leaveFor() {
-            this.$router.push(`/projectTeamDetail/${this.$route.params.teamId}/isedit`);
-            
+            this.$router.push(`/projectTeamDetail/${this.$route.params.teamId}/isedit`);   
         },
         // 删除成员
         handleDelete(val) {

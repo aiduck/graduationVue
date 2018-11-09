@@ -52,6 +52,11 @@
                                 </el-select>
                             </el-form-item>
                         </el-col>
+                         <el-col :span="12">
+                            <el-form-item label="是否可选">
+                                <el-input  v-model="form.project.is_choose" disabled></el-input>
+                            </el-form-item>
+                        </el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="12">
@@ -61,7 +66,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="状态">
-                                <el-button type="danger" :disabled="ischeck" @click="handleDelete">{{ form.project.status == '可用' ? '禁用' : '启用'}}</el-button>
+                                <el-button type="danger" :disabled="ischeck || form.project.is_choose === '不可选'?true:false" @click="handleDelete">{{ form.project.status == '可用' ? '禁用' : '启用'}}</el-button>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -163,7 +168,8 @@ export default {
                     project_content: "",
                     target: "",
                     course_id: "",
-                    status:""
+                    status:"",
+                    is_choose:""
                 },    
             },
             college_id: [],
@@ -274,7 +280,6 @@ export default {
                    ...this.form.project
                 }
             }
-            console.log(params);
             axios
             .post('/api/projectInfo/updateProjectInfo',params)
             .then(res => {
