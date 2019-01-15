@@ -3,6 +3,7 @@
         <el-menu class="sidebar-el-menu" :default-active="$route.path" :collapse="collapse" background-color="#324157"
             text-color="#bfcbd9" active-text-color="#20a0ff" unique-opened router 
             @select="handleSelect"   @open="handleOpen" @close="handleClose">
+            <!-- 计算属性 动态渲染 -->
             <template v-for="item in items">
                 <!-- subs存在说明有二级菜单 -->
                 <template v-if="item.subs">
@@ -45,78 +46,23 @@
         data() {
             return {
                 collapse: false,
-                items: [
+                itemList: [
                     {
                         icon: 'el-icon-setting',
                         index: '/dashboard',
                         title: '个人中心'
                     },
-                    {
-                        icon: 'el-icon-tickets',
-                        index: '/basicInfo',
-                        title: '基础信息',
-                    },
-                    {
-                        icon: 'el-icon-lx-profile',
-                        index: '3',
-                        title: '用户信息',
-                        subs: [
-                            {
-                                index: '/userInfo',
-                                title: '用户基本信息'
-                            },
-                            {
-                                index: '/teacherInfo',
-                                title: '教师基本信息',
-                            },
-                            {
-                                index: '/studentInfo',
-                                title: '学生基本信息'
-                            }
-                        ]
-                    },
-                    {
-                        icon: 'el-icon-lx-read',
-                        index: '/courseInfo',
-                        title: '课程信息',
-                    },
-                    {
-                        icon: 'el-icon-lx-tag',
-                        index: '5',
-                        title: '班级信息',
-                        subs: [
-                            {
-                                index: '/classInfo',
-                                title: '班级基本信息',
-                            },
-                            {
-                                index: '/classMemeberInfo',
-                                title: '班级成员信息',
-                            },
-                        ]
-                    },
-                    {
-                        icon: 'el-icon-lx-file',
-                        index: '6',
-                        title: '项目信息',
-                        subs: [
-                            {
-                                index: '/projectInfo',
-                                title: '项目案例库信息',
-                            },
-                            {
-                                index: '/projectTeamInfo',
-                                title: '项目组',
-                            },
-                        ]
-                    },
-                    
                 ]
             }
         },
+        // 计算属性
         computed:{
             onRoutes(){
                 return this.$route.path.replace('/','');
+            },
+            items() {
+                let list = [...this.itemList, ...this.$store.state.permission.menuList]
+                return list
             }
         },
         methods: {

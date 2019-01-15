@@ -32,6 +32,7 @@
     </div>
 </template>
 <script>
+    import { mapActions } from 'vuex'
     import bus from '../common/bus';
     export default {
         data() {
@@ -48,10 +49,20 @@
             }
         },
         methods:{
+            ...mapActions(['FedLogOut','RemovePermission']),
             // 用户名下拉菜单选择事件
             handleCommand(command) {
                 if(command == 'loginout'){
-                    localStorage.removeItem('ms_username');
+                    this.FedLogOut().then(() => {
+                        console.log('退出登录');
+                    }).catch(error => {
+                        console.log(error)
+                    });
+                    this.RemovePermission().then(() => {
+                        console.log('清空侧边栏路由内容');
+                    }).catch(error => {
+                        console.log(error)
+                    });
                     this.$router.push('/login');
                 }
             },

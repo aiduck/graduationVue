@@ -2,13 +2,17 @@
     <div class="wrap">
         <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-file"></i> 班级基本信息/班级详细信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-file"></i> 项目案例库信息/项目详细信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <div class="container formCon">
             <div class="form-box">
                 
                 <el-form ref="form" :model="form" label-width="80px" size="mini">
+                    <div class="form-hr">
+                        <span class="form-tip">项目信息</span>
+                        <hr>
+                    </div>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="项目ID">
@@ -70,7 +74,11 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <hr class="form-hr">
+                    
+                    <div class="form-hr">
+                        <span class="form-tip">课程信息</span>
+                        <hr>
+                    </div>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="课程ID">
@@ -348,6 +356,9 @@ export default {
 }
 .form-hr {
     margin: 20px 0;
+}
+.form-tip {
+    border-bottom: 4px solid #409EFF;
 }
 </style>
 

@@ -9,6 +9,11 @@
             <div class="form-box">
                 
                 <el-form ref="form" :model="form" label-width="80px" size="mini">
+                    <div class="form-hr">
+                        <span class="form-tip">班级信息</span>
+                        <hr>
+                    </div>
+                    
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="班级ID">
@@ -45,7 +50,10 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <hr class="form-hr">
+                    <div class="form-hr">
+                        <span class="form-tip">课程信息</span>
+                        <hr>
+                    </div>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="课程ID">
@@ -106,7 +114,11 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
-                    <hr class="form-hr">
+                    
+                    <div class="form-hr">
+                        <span class="form-tip">教师信息</span>
+                        <hr>
+                    </div>
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="教师ID">
@@ -360,6 +372,9 @@ export default {
 }
 .form-hr {
     margin: 20px 0;
+}
+.form-tip {
+    border-bottom: 4px solid #409EFF;
 }
 </style>
 

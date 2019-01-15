@@ -19,38 +19,54 @@
 </template>
 
 <script>
-    export default {
-        data: function(){
-            return {
-                ruleForm: {
-                    username: '',
-                    password: ''
-                },
-                rules: {
-                    username: [
-                        { required: true, message: '请输入用户名', trigger: 'blur' }
-                    ],
-                    password: [
-                        { required: true, message: '请输入密码', trigger: 'blur' }
-                    ]
-                }
-            }
-        },
-        methods: {
-            submitForm(formName) {
-                this.$refs[formName].validate((valid) => {
-                    if (valid) {
-                        localStorage.setItem('ms_username',this.ruleForm.username);
-                        this.$router.push('/');
-                        console.log(this.ruleForm)
-                    } else {
-                        console.log('error submit!!');
-                        return false;
-                    }
-                });
+import { mapActions } from 'vuex'
+export default {
+    data: function(){
+        return {
+            ruleForm: {
+                username: '',
+                password: ''
+            },
+            rules: {
+                username: [
+                    { required: true, message: '请输入用户名', trigger: 'blur' }
+                ],
+                password: [
+                    { required: true, message: '请输入密码', trigger: 'blur' }
+                ]
             }
         }
+    },
+    methods: {
+        ...mapActions(['Login','GetPermission']),
+        submitForm(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    let params = {
+                        ...this.ruleForm
+                    }
+                    // 获取登陆信息 （Login是store的接口）
+                    this.Login(params).then(() => {
+                        this.$notify.success({
+                            title: '登录成功',
+                            message: '欢迎光临'
+                        })
+                        this.$router.push('/');
+                    }).catch(error => {
+                        this.$notify.error({
+                            title: '登录失败',
+                            message: '用户名或者密码错误'
+                        })
+                        console.log(error);
+                    });
+                } else {
+                    console.log('错误提交');
+                    return false;
+                }
+            });
+        }
     }
+}
 </script>
 
 <style scoped>

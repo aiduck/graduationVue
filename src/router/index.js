@@ -1,125 +1,54 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
+const Login = () => import('@/components/page/Login.vue')
+const NotFound = () => import('@/components/page/404.vue')
+const Home = () => import('@/components/common/Home.vue')
+const Dashboard = () => import('@/components/page/Dashboard.vue')
+
 Vue.use(Router)
 
+/* 初始路由 */
 export default new Router({
-  routes: [
-    {
-      path: '/',
-      redirect: '/dashboard'
-    },
-    {
-      path: '/',
-      component: resolve => require(['../components/common/Home.vue'], resolve),
-      meta: { title: '自述文件' },
-      children:[
+    mode: 'history',
+    routes: [
         {
-            path: '/dashboard',
-            component: resolve => require(['../components/page/Dashboard.vue'], resolve),
-            meta: { title: '个人中心' }
-        },
-        {
-          // 学院专业班级
-          path: '/basicInfo',
-          component: resolve => require(['../components/page/BaseInfo.vue'], resolve),
-          meta: { title: '基础信息' }
-        },
-        {
-          // 用户信息
-          path: '/userInfo',
-          component: resolve => require(['../components/page/UserInfo.vue'], resolve),
-          meta: { title: '用户基础信息' },
-        },
-        {
-          // 用户信息详情页
-          path: '/userDetails/:userId/:isCheck',
-          component: resolve => require(['../components/page/UserInfoDetail.vue'], resolve),
-          meta: { title: '用户详情页' }
-        },
-        {
-          // 教师信息
-          path: '/teacherInfo',
-          component: resolve => require(['../components/page/TeacherInfo.vue'], resolve),
-          meta: { title: '教师基本信息' }
-        },
-        {
-          // 教师信息
-          path: '/teacherInfo/:userId/:isCheck',
-          component: resolve => require(['../components/page/TeacherInfoDetail.vue'], resolve),
-          meta: { title: '教师详情页' }
-        },
-        {
-          // 学生信息
-          path: '/studentInfo',
-          component: resolve => require(['../components/page/StudentInfo.vue'], resolve),
-          meta: { title: '学生基本信息' }
-        },
-        {
-          // 学生信息
-          path: '/studentInfo/:userId/:isCheck',
-          component: resolve => require(['../components/page/StudentInfoDetail.vue'], resolve),
-          meta: { title: '学生详情页' }
-        },
-        {
-          // 课程管理
-          path: '/courseInfo',
-          component: resolve => require(['../components/page/CourseInfo.vue'], resolve),
-          meta: { title: '课程管理' }
-        },
-        {
-          // 课程管理详情
-          path: '/courseInfo/:courseId/:isCheck',
-          component: resolve => require(['../components/page/CourseInfoDetail.vue'], resolve),
-          meta: { title: '课程详情管理' }
-        },
-        {
-          // 班级基本信息
-          path: '/classInfo',
-          component: resolve => require(['../components/page/ClassInfo.vue'], resolve),
-          meta: { title: '教学班级管理' }
-        },
-        {
-          // 班级详情信息
-          path: '/classInfo/:classId/:isCheck',
-          component: resolve => require(['../components/page/ClassInfoDetail.vue'], resolve),
-          meta: { title: '教学班级详情' }
-        },
-        {
-          // 班级成员信息
-          path: '/classMemeberInfo',
-          component: resolve => require(['../components/page/classMemeberInfo.vue'], resolve),
-          meta: { title: '班级成员信息' }
-        },
-        {
-          // 项目案例库信息
-          path: '/projectInfo',
-          component: resolve => require(['../components/page/projectInfo.vue'], resolve),
-          meta: { title: '项目案例库信息' }
-        },
-        {
-          // 项目案例库详情
-          path: '/projectDetailInfo/:projectId/:isCheck',
-          component: resolve => require(['../components/page/projectInfoDetail.vue'], resolve),
-          meta: { title: '项目案例库详情' }
-        },
-        {
-          // 项目组
-          path: '/projectTeamInfo',
-          component: resolve => require(['../components/page/projectTeamInfo.vue'], resolve),
-          meta: { title: '项目组' }
-        },
-        {
-          // 项目组详细信息
-          path: '/projectTeamDetail/:teamId/:isCheck',
-          component: resolve => require(['../components/page/projectTeamDetail.vue'], resolve),
-          meta: { title: '项目组详细信息' }
-        },
-      ]
-    },
-    {
-      path: '/login',
-      component: resolve => require(['../components/page/Login.vue'], resolve)
-    },
-  ]
+        path: '/login',
+        name: 'login',
+        component: Login
+        }
+    ] 
 })
+
+
+/* 准备动态添加的路由 */
+export const DynamicRoutes = [
+    {
+        path: '/',
+        name: 'home',
+        component: Home,
+        redirect: '/dashboard',
+        meta: {
+            requiresAuth: true,
+            name: '首页'
+        },
+        children: [
+            {
+                path: '/dashboard',
+                component: Dashboard,
+                name: 'dashboard',
+                meta: { title: '个人中心' }
+            }
+        ]
+    },
+    {
+        path: '/404',
+        name: '404',
+        component: NotFound  // 表示找不到
+    },
+    {
+        path: '*',    // 此处需特别注意至于最底部
+        redirect: '/404'
+    }
+]
+
