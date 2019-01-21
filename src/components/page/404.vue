@@ -9,12 +9,10 @@
 </template>
 
 <script>
-import {
-    mapActions
-} from 'vuex'
+import { mapActions } from 'vuex'
 export default {
-    ...mapActions(['FedLogOut','RemovePermission']),
     methods: {
+        ...mapActions(['FedLogOut','RemovePermission']),
         goLoginPage(){
             this.FedLogOut().then(() => {
                 console.log('退出登录');

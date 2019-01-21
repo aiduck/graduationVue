@@ -21,6 +21,12 @@
                             :disabled="value.disabled"
                             :placeholder="placeholderFilter(value.inputType, value.label)">
                         </el-input>
+                        <el-input 
+                            v-if="value.inputType === 0.2"
+                            v-model="valueLabelMap[key]" 
+                            disabled
+                            :placeholder="placeholderFilter(value.inputType, value.label)">
+                        </el-input>
                         <el-select
                             v-if="value.inputType === 1"
                             v-model="addForm[key]"

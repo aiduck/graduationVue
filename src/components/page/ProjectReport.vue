@@ -2,7 +2,7 @@
     <div class="wrap">
          <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-file"></i> 项目案例库信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-file"></i> 项目日报信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <!-- 表格 -->
@@ -16,7 +16,7 @@
                 </el-col>
                 <el-col :span="16">
                     <div class="handle-box">
-                        <el-button type="primary"  @click="handleAdd">添加</el-button>
+                        <el-button v-if="usertype === '学生' "type="primary"  @click="handleAdd">提交</el-button>
                         <el-button type="primary"  @click="enterFilter">{{ isFilterIng ? '退出筛选' : '筛选'}}</el-button>
                     </div>
                 </el-col>
@@ -68,14 +68,17 @@
                             type="primary"
                             @click="handleMore(scope.$index, scope.row)">更多</el-button>
                         <el-button
+                            v-if="!(usertype === '学生' && scope.row.report_status === '已审核')"
                             size="small"
                             type="success"
-                            @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                            @click="handleEdit(scope.$index, scope.row)">
+                            {{usertype === '教师'? '评定' : '编辑' }}
+                        </el-button>
                         <el-button
+                            v-if="!(scope.row.report_status === '已审核')"
                             size="small"
                             type="danger"
-                            :disabled="scope.row.is_choose === '不可选' ?true:false"
-                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status === '可用' ? '禁用' : '启用'}}</el-button>
+                            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -93,33 +96,33 @@
     </div>
 </template>
 <script>
-// 引入xlsx
-// var XLSX = require('xlsx');
 import axios from '../../utils/axiosHttp.js';
 import util from '../../utils/utils.js';
 import FilterBox from "../common/FilterBox";
 import AddBox from '../common/AddBox'
+import { Store } from 'vuex';
+import moment from 'moment';
 export default {
-    name: 'ProjectInfo',
+    name: 'ProjectReport',
     components: { FilterBox, AddBox },
     data() {
         return {
             tableData: [],  // 表格数据信息
-            multipleSelection: [], // 删除信息
             // 表格头部
             keyFormatMap: {
-                // 格式化标签映射表
-                project_id: "项目ID",
-                project_name: "项目名称",
-               
-                course_name: "课程名称",
-                status: "项目状态",
-                is_choose: "是否可选"
+                // 格式化标签映射表   
+                report_date: "提交日期",
+                report_status: "审核状态",
+                project_id: "项目id",
+                user_id: "提交者",
             },
             expandFormatMap: {
-                course_id: "课程ID",
-                project_content: "项目内容",
-                target: "项目目标",
+                report_id: "日报id",
+                report_time: "提交时间",  
+                report_work: "工作内容",
+                report_problem:"存在问题",
+                report_plan: "工作计划",
+                report_comment: "日报评语",
             },
             hideMap: {},
             // 表格页码参数
@@ -127,115 +130,93 @@ export default {
             currentPage: 1, //当前页
             start: 1, //查询的页码
             totalCount: 0, //返回的记录总数
+
             // 筛选表格参数
             isFirstFilter: true,
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
             valueLabelMap:{
-                course_id: [],
-                status: [
+                project_id: [],
+                user_id: '',
+                report_status: [
                     {
-                        value: "可用",
-                        label: "可用"
+                        value: "未审核",
+                        label: "未审核"
                     },
                     {
-                        value: "不可用",
-                        label: "不可用"
-                    }
-                ],
-                is_choose:[
-                    {
-                        value: "可选",
-                        label: "可选"
-                    },
-                    {
-                        value: "不可选",
-                        label: "不可选"
+                        value: "已审核",
+                        label: "已审核"
                     }
                 ],
             },
             filterTmpl: {
+                report_id: {
+                    label: "日报ID",
+                    inputType: 0 // 0 代表 input
+                },
+                report_date: {
+                    label: "提交日期",
+                    inputType: 4 // 0 代表 时间选择器
+                },
+                report_status: {
+                    label: "审核状态",
+                    inputType: 1 // 1 代表 时间选择器
+                },
                 project_id: {
                     label: "项目ID",
                     inputType: 0 // 0 代表 input
                 },
-                project_name: {
-                    label: "项目名称",
-                    inputType: 0 // 0 代表 input
-                },
-                course_id: {
-                    label: "课程Id",
-                    inputType: 1
-                },
-                status: {
-                    label: "状态",
-                    inputType: 1 // 1 代表下拉框
-                },
-                is_choose: {
-                    label: "是否可选",
-                    inputType: 1 // 1 代表下拉框
+                user_id: {
+                    label: "提交者ID",
+                    inputType: 0.2 // 0 代表 input
                 }
             },
             filter: {
                 //搜索条件
+                report_id: "",
+                report_date: "",
+                report_status: "",
                 project_id: "", 
-                project_name: "", 
-                course_id: "", 
-                status: "",
-                is_choose: "",
+                user_id: "", 
             },
             // 添加表格参数
             showInfoAdd: false,
             infoAddTmpl: {
-                project_id: {
+                user_id: {
+                    label: "提交者ID",
+                    inputType: 0.2 // 0 代表input 已经输入过的内容
+                },
+                project_id:{
                     label: "项目ID",
-                    inputType: 0 // 0 代表 input
-                },
-                project_name: {
-                    label: "项目名称",
-                    inputType: 0 // 0 代表 input
-                },
-                course_id: {
-                    label: "课程ID",
                     inputType: 1 // 1 代表下拉框
                 },
-                course_name: {
-                    label: "课程名称",
-                    inputType: 0.1, // 0.1 表示只能看不能输入的input
+                project_name:{
+                    label: "项目名称",
+                    inputType: 0.1,  // 0.1 表示只能看不能输入的input
                     disabled: true,
                     addSelectShow:''
                 },
-                status: {
-                    label: "状态",
-                    inputType: 1 // 1 代表下拉框
-                },
-                is_choose: {
-                    label: "是否可选",
-                    inputType: 1 // 1 代表下拉框
-                },
-                project_content: {
-                    label: "项目内容",
-                    inputType: 4,
+                report_work: {
+                    label: "工作内容",
+                    inputType: 4, // 0.1 表示只能看不能输入的input
                     maxlength: 500
                 },
-                target: {
-                    label: "项目目标",
+                report_problem: {
+                    label: "存在问题",
                     inputType: 4,
-                    maxlength: 100
+                    maxlength: 300
                 },
+                report_plan: {
+                    label: "工作计划",
+                    inputType: 4,
+                    maxlength: 300
+                }
             },
             infoAddRules: {
                 project_id: [
                     { required: true, message: "请输入项目ID", trigger: "blur" }
-                ],
-                project_name: [
-                    { required: true, message: "请输入项目名称", trigger: "blur" }
-                ],
-                course_id: [
-                    { required: true, message: "请输入课程ID", trigger: "blur" }
                 ]
             },
-            // addSelectShow: '',
         }
     },
     created() {
@@ -245,6 +226,9 @@ export default {
         // 是否显示退出筛选
         isFilterIng() {
             return !this.tagEmpty;
+        },
+        usertype() {
+            return this.$store.state.user.usertype
         }
     },
     watch: {
@@ -265,24 +249,24 @@ export default {
 
     },
     mounted() {
-        this.imFile = document.getElementById('imFile');
-        this.outFile = document.getElementById('downlink')
-        this.initCourseInfo();
-        this.initProject(this.pageSize,this.currentPage);
+        this.initProjectReport(this.pageSize,this.currentPage);
     },
     methods: {
-        initProject(pageSize, currentPage, val) {
+        // 初始化表格
+        initProjectReport(pageSize, currentPage, val) {
             let params = {
+                user_id: this.$store.state.user.user_id,
+                usertype: this.$store.state.user.usertype,
                 pageSize: pageSize,
                 currentPage: currentPage
             }
             axios
-            .get('/api/projectInfo/queryLimitProject',{params})
+            .get('/api/projectReport/queryReport',{params})
             .then(res => {
                 if(res.data.code === 200) {
                     let projectRes = res.data.data;
                     this.totalCount = projectRes.total;
-                    this.tableData = projectRes.projectList || [];
+                    this.tableData = projectRes.reportList || [];
                     this.currentPage = val || 1;
                 }  else {
                     this.$message({
@@ -299,27 +283,26 @@ export default {
                 });
             })
         },
-        // 初始化课程id下拉框
-        initCourseInfo() {
+
+        // 提交按钮：通过输入的用户ID，查询是否是当前登录的用户，以及她的参与的项目的情况
+        handleAdd() {
+            let params = {
+                user_id: this.$store.state.user.user_id,
+                username: this.$store.state.user.username
+            }
             axios
-            .get('/api/courseInfo/queryAll')
+            .post('/api/projectReport/checkUserIdAndRetPro', params)
             .then(res => {
-                if(res.data.code === 200) {
-                    if(res.data.data.courseList) {
-                        res.data.data.courseList.map((item) => {
-                            this.valueLabelMap.course_id.push({
-                                value: item.course_id,
-                                label: item.course_id,
-                                disabled: item.status === '可用'?false:true
-                            })
+                if(res.data.code === 200 && res.data.data !== []) {
+                    this.valueLabelMap.project_id = [];
+                    res.data.data.map((item) => {
+                        this.valueLabelMap.project_id.push({
+                            value: item.project_id,
+                            label: item.project_id,
                         })
-                    }
-                    // this.valueLabelMap.course_id = res.data.data.courseList || []
-                } else {
-                    this.$message({
-                        type: 'warning',
-                        message: `数据库操作失败错误代码${res.data.code}`
-                    });
+                    })
+                    this.valueLabelMap.user_id = this.$store.state.user.user_id;
+                    this.showInfoAdd = true;
                 }
             })
             .catch(err => {
@@ -330,28 +313,26 @@ export default {
                 });
             })
         },
-        // 单个添加按钮
-        handleAdd() {
-            this.showInfoAdd = true;
-        },
         receiveInfo(addform) {
-            // console.log(addform);
             this.showInfoAdd = false;
             if (addform !== undefined) {
+                let params = {
+                    ...addform,
+                    report_date: moment().format('YYYY-MM-DD'),
+                    report_time: moment().format('HH:mm:ss'),
+                    report_status: '未审核',
+                    report_comment: '',
+                    user_id: this.valueLabelMap.user_id
+                }
                 axios
-                .post("/api/projectInfo/insterProject",addform)
+                .post('/api/projectReport/inster', params)
                 .then(res => {
                     if(res.data.code === 200) {
-                        this.initProject(this.pageSize, this.currentPage)
+                        this.initProjectReport(this.pageSize,this.currentPage)
                         this.$message({
                             message: `添加成功`,
                             type: 'success'
-                        });
-                    } else {
-                        this.$message({
-                            type: 'warning',
-                            message: `数据库操作失败错误代码${res.data.code}`
-                        });
+                        }); 
                     }
                 })
                 .catch(err => {
@@ -362,15 +343,27 @@ export default {
                     });
                 })
             }
-           
         },
         // 搜索按钮相关函数
         enterFilter() {
+            // 如果不是管理员的用户，只能查找自己的日报信息
+            if(this.$store.state.user.usertype !== '管理员') {
+                this.valueLabelMap.user_id = this.$store.state.user.user_id;
+                this.filter.user_id = this.$store.state.user.user_id;
+            } else {
+                delete this.filterTmpl.user_id
+                this.filterTmpl = {
+                    ...this.filterTmpl,
+                    user_id: {
+                        label: "提交者ID",
+                        inputType: 0 // 0 代表 input
+                    }
+                }
+            }
             this.isFirstFilter = true;
             if(this.isFilterIng) {
                 console.log('退出筛选');
                 this.filter = util.resetObject(this.filter);
-                // 就是没有任何条件的所有信息
                  this.initProject(this.pageSize, this.currentPage);
             }
             else {
@@ -380,10 +373,10 @@ export default {
         },
         filterData(params) {
             axios
-            .post('/api/projectInfo/queryByFilter', params)
+            .post('/api/projectReport/queryByFilter', params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.tableData = res.data.data.projectList || [];
+                    this.tableData = res.data.data.reportList || [];
                     this.totalCount = res.data.data.total;
                 } else {
                     this.$message({
@@ -401,7 +394,6 @@ export default {
             })
         },
         receiveFilter(filter) {
-            console.log(filter);
             if (this.isFirstFilter && filter !== undefined) {
                 this.filter = filter;
                 let params = {
@@ -422,6 +414,7 @@ export default {
             this.isFirstFilter = false;
             this.showFilterBox = false;
         },
+
         // 标签的key格式化器
         keyFormater(value) {
             if (!value) return "";
@@ -429,15 +422,16 @@ export default {
             return Object.assign({}, this.keyFormatMap, this.expandFormatMap, this.hideMap)[value];
         },
         async inputChange(oldObj, newObj) {
-            if(oldObj && newObj.label === '课程ID') {
+            // 提交一个日报，下拉选中的响应事件
+            if(oldObj && newObj.label === '项目ID') {
                 let params = {
-                    course_id: oldObj
+                    project_id: oldObj
                 };
                 axios
-                .post("/api/courseInfo/queryByIdForName",params)
+                .post("/api/projectInfo/queryByIdForName",params)
                 .then(res => {
                     if(res.data.code === 200) {
-                       this.infoAddTmpl.course_name.addSelectShow = res.data.data.course[0].course_name;
+                        this.infoAddTmpl.project_name.addSelectShow = res.data.data.project[0].project_name;
                     } else {
                         this.$message({
                             type: 'warning',
@@ -455,29 +449,29 @@ export default {
             }
         },
         inputClear(type) {},
+
         // 更多按钮
         handleMore(index, row) {
-            this.$router.push(`/projectDetailInfo/${row.project_id}/ischeck`);
+            this.$router.push(`/projectReportDetail/${row.report_id}/ischeck`);
         },
         // 编辑按钮
         handleEdit(index, row) {
-            this.$router.push(`/projectDetailInfo/${row.project_id}/isedit`);
+            this.$router.push(`/projectReportDetail/${row.report_id}/isedit`);
         },
-        // 禁用按钮
+        // 删除按钮
         handleDelete(index, row) {
-            let status = row.status === '可用' ? '不可用' : '可用';
-            let project_id = row.project_id;
             let params = {
-                status: status,
-                project_id: project_id
+                report_id: row.report_id
             }
             axios
-            .post('/api/projectInfo/updateProjectStatus', params)
+            .post('/api/projectReport/deleteReport',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    // console.log(res)
-                    // 前端修改用户状态
-                    this.tableData[index].status = row.status === '可用' ? '不可用' : '可用';
+                    this.initProject(this.pageSize, currentPage);
+                    this.$message({
+                        message: `删除成功`,
+                        type: 'success'
+                    });
                 } else {
                     this.$message({
                         type: 'warning',
@@ -491,7 +485,6 @@ export default {
                     type: 'error'
                 });
             })
-
         },
         // 分页操作按钮
         handleCurrentChange(val) {

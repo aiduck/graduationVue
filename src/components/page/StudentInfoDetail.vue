@@ -129,7 +129,7 @@
 import axios from '../../utils/axiosHttp.js';
 import util from '../../utils/utils.js'
 export default {
-    name: 'userDetails',
+    name: 'StudentInfoDetail',
     data() {
         return {
             userForm: {

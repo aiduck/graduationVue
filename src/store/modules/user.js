@@ -11,6 +11,7 @@ const user = {
         token: getToken(),
         usertype: getStore('type'),
         username: getStore('name'),
+        user_id: getStore('user_id')
     },
     mutations: {
         SET_TOKEN: (state, token) => {
@@ -21,6 +22,9 @@ const user = {
         },
         SET_USERNAME: (state, username) => {
             state.username = username;
+        },
+        SET_USERID: (state, user_id) => {
+            state.user_id = user_id;
         },
     },
     actions: {
@@ -33,13 +37,16 @@ const user = {
                 .get('/api/login',{params})
                 .then(res => {
                     if(res.data.code === 200) {
-                        const { token, username, usertype } = res.data.data;
+                        const { token, username, usertype, user_id } = res.data.data;
+                        console.log(user_id);
                         commit('SET_TOKEN', token)
                         commit('SET_USERTYPE', usertype)
                         commit('SET_USERNAME', username)
+                        commit('SET_USERID',user_id)
                         setToken(token);
                         setStore('name',username);
                         setStore('type',usertype);
+                        setStore('user_id',user_id);
                         resolve();
                     }
                     return res;
@@ -55,9 +62,11 @@ const user = {
               commit('SET_TOKEN', '')
               commit('SET_USERTYPE', '')
               commit('SET_USERNAME', '')
+              commit('SET_USERID', '')
               removeToken()
               removeStore('name');
               removeStore('type');
+              removeStore('user_id');
               resolve()
             })
         },

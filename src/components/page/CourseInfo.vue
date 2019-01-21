@@ -105,7 +105,7 @@ import util from '../../utils/utils.js';
 import FilterBox from "../common/FilterBox";
 import AddBox from '../common/AddBox'
 export default {
-    name: 'userInfo',
+    name: 'CourseInfo',
     components: { FilterBox, AddBox },
     data() {
         return {

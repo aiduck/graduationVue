@@ -16,6 +16,12 @@
                             v-model="filter[key]"
                             :placeholder="placeholderFilter(value.inputType, value.label)">
                         </el-input>
+                        <el-input 
+                            v-if="value.inputType === 0.2"
+                            v-model="valueLabelMap[key]" 
+                            disabled
+                            :placeholder="placeholderFilter(value.inputType, value.label)">
+                        </el-input>
                         <el-select
                             v-if="value.inputType === 1"
                             v-model="filter[key]"
@@ -45,9 +51,18 @@
                             v-if="value.inputType === 3"
                             v-model="filter[key]"
                             :fetch-suggestions="querySearch"
-                             :placeholder="placeholderFilter(0, value.label)"
+                            :placeholder="placeholderFilter(0, value.label)"
                             @select="handleSelect"
                         ></el-autocomplete>
+                        <el-date-picker
+                            v-if="value.inputType === 4"
+                            v-model="filter[key]"
+                            align="right"
+                            type="date"
+                            value-format="yyyy-mm-dd"
+                            placeholder="选择日期"
+                            clearable>
+                        </el-date-picker>
                     </el-form-item>
                 </el-col>
             </el-row>
