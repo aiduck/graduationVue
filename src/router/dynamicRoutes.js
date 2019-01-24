@@ -27,6 +27,9 @@ const ProjectTeamDetail = () => import('@/components/page/ProjectTeamDetail.vue'
 const ProjectReport = () => import('@/components/page/ProjectReport.vue')
 const projectReportDetail = () => import('@/components/page/ProjectReportDetail.vue')
 
+const ProjectAchi = () => import('@/components/page/ProjectAchi.vue')
+const ProjectAchiDetail = () => import('@/components/page/ProjectAchiDetail.vue')
+
 
 // 所有路由
 const dynamicRoutes =  [
@@ -159,7 +162,20 @@ const dynamicRoutes =  [
     name: 'projectReportDetail',
     component: projectReportDetail,
     meta: { title: '项目日报详细信息' }
-  }
+  },
+  {
+    path: '/projectAchi',
+    name: 'projectAchi',
+    component: ProjectAchi,
+    meta: { title: '项目成果' }
+  },
+  {
+    path: '/projectAchiDetail/:deliveryId/:isCheck',
+    name: 'projectAchiDetail',
+    component: ProjectAchiDetail,
+    meta: { title: '项目成果详细信息' }
+  },
+  
 ]
 
 

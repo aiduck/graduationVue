@@ -8,7 +8,7 @@
         <div class="container formCon">
             <div class="form-box">
                 
-                <el-form ref="form" :model="form" label-width="80px" size="mini">
+                <el-form ref="form" :model="form" label-width="100px" size="mini">
                     <div class="form-hr">
                         <span class="form-tip">项目信息</span>
                         <hr>
@@ -71,6 +71,20 @@
                         <el-col :span="12">
                             <el-form-item label="状态">
                                 <el-button type="danger" :disabled="ischeck || form.project.is_choose === '不可选'?true:false" @click="handleDelete">{{ form.project.status == '可用' ? '禁用' : '启用'}}</el-button>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="12">
+                            <el-form-item label="项目截止日期">
+                                <el-date-picker
+                                    v-model="form.project.deadline"
+                                    :disabled="ischeck"
+                                    align="right"
+                                    type="date"
+                                    placeholder="选择日期"
+                                    clearable>
+                                </el-date-picker>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -152,7 +166,8 @@
 </template>
 <script>
 import axios from '../../utils/axiosHttp.js';
-import util from '../../utils/utils.js'
+import util from '../../utils/utils.js';
+import moment from 'moment';
 export default {
     name: 'ProjectInfoDetail',
     data() {
@@ -177,7 +192,8 @@ export default {
                     target: "",
                     course_id: "",
                     status:"",
-                    is_choose:""
+                    is_choose:"",
+                    deadline: ""
                 },    
             },
             college_id: [],
@@ -283,9 +299,13 @@ export default {
         },
         // 确认修改
         onSubmit() {
+            // let deadline = this.form.project.deadline;
+            let deadline = moment(this.form.project.deadline).format('YYYY-MM-DD');
+            delete this.form.project.deadline;
             let params = {
                 form: {
-                   ...this.form.project
+                   ...this.form.project,
+                   deadline: deadline
                 }
             }
             axios

@@ -67,7 +67,14 @@
                         :placeholder="placeholderFilter(0, value.label)"
                         :maxlength="value.maxlength">
                         </el-input>
-
+                        <el-date-picker
+                            v-if="value.inputType === 5"
+                            v-model="addForm[key]"
+                            align="right"
+                            type="date"
+                            placeholder="选择日期"
+                            clearable>
+                        </el-date-picker>
                     </el-form-item>
                 </el-col>
             </el-row>

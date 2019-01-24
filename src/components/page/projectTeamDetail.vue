@@ -242,6 +242,13 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
+                    <el-row>
+                        <el-col :span="12">
+                            <el-form-item label="项目截止日期">
+                                <el-input v-model="form.project.deadline" disabled></el-input>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
 
 
                     <el-form-item class="footSubmit" size="medium" v-if="!ischeck">
@@ -285,7 +292,8 @@ export default {
                     project_content:"",
                     target:"",
                     course_id:"",
-                    status:""
+                    status:"",
+                    deadline: ""
                 }
                 
             },

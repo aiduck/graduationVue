@@ -2,7 +2,7 @@
     <div class="wrap">
          <div class="crumbs">
             <el-breadcrumb separator="/">
-                <el-breadcrumb-item><i class="el-icon-lx-file"></i> 项目日报信息</el-breadcrumb-item>
+                <el-breadcrumb-item><i class="el-icon-lx-file"></i> 项目成果信息</el-breadcrumb-item>
             </el-breadcrumb>
         </div>
         <!-- 表格 -->
@@ -72,13 +72,8 @@
                             size="small"
                             type="success"
                             @click="handleEdit(scope.$index, scope.row)">
-                            {{usertype === '学生'? '编辑' : '评定'}}
+                            编辑
                         </el-button>
-                        <el-button
-                            v-if="scope.row.isShowEditBtn && usertype === '学生'"
-                            size="small"
-                            type="danger"
-                            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -111,22 +106,18 @@ export default {
             // 表格头部
             keyFormatMap: {
                 // 格式化标签映射表   
-                report_date: "提交日期",
+                submit_date: "提交日期",
                 deadline: "项目截止日期",
-                report_status: "审核状态",
+                title: "成果名称",
                 project_id: "项目id",
                 user_id: "提交者",
             },
             expandFormatMap: {
-                //
-                report_time: "提交时间",  
-                report_work: "工作内容",
-                report_problem:"存在问题",
-                report_plan: "工作计划",
-                report_comment: "日报评语",
+                // delivery_id: "成果id",
+                submit_time: "提交时间",  
             },
             hideMap: {
-                report_id: "日报id",
+                delivery_id: "成果id",
             },
             // 表格页码参数
             pageSize: 10, //每页大小
@@ -141,29 +132,19 @@ export default {
             valueLabelMap:{
                 project_id: [],
                 user_id: '',
-                report_status: [
-                    {
-                        value: "未审核",
-                        label: "未审核"
-                    },
-                    {
-                        value: "已审核",
-                        label: "已审核"
-                    }
-                ],
             },
             filterTmpl: {
-                report_id: {
-                    label: "日报ID",
+                delivery_id: {
+                    label: "成果ID",
                     inputType: 0 // 0 代表 input
                 },
-                report_date: {
+                title: {
+                    label: "成果名称",
+                    inputType: 0 // 0 代表 input
+                },
+                submit_date: {
                     label: "提交日期",
                     inputType: 4 // 0 代表 时间选择器
-                },
-                report_status: {
-                    label: "审核状态",
-                    inputType: 1 // 1 代表 时间选择器
                 },
                 project_id: {
                     label: "项目ID",
@@ -176,15 +157,19 @@ export default {
             },
             filter: {
                 //搜索条件
-                report_id: "",
-                report_date: "",
-                report_status: "",
+                delivery_id: "",
+                title: "",
+                submit_date: "",
                 project_id: "", 
                 user_id: "", 
             },
             // 添加表格参数
             showInfoAdd: false,
             infoAddTmpl: {
+                title: {
+                    label: "成果名称",
+                    inputType: 0 // 0 表示只能看不能输入的input
+                },
                 user_id: {
                     label: "提交者ID",
                     inputType: 0.2 // 0 代表input 已经输入过的内容
@@ -198,24 +183,12 @@ export default {
                     inputType: 0.1,  // 0.1 表示只能看不能输入的input
                     disabled: true,
                     addSelectShow:''
-                },
-                report_work: {
-                    label: "工作内容",
-                    inputType: 4, // 0.1 表示只能看不能输入的input
-                    maxlength: 500
-                },
-                report_problem: {
-                    label: "存在问题",
-                    inputType: 4,
-                    maxlength: 300
-                },
-                report_plan: {
-                    label: "工作计划",
-                    inputType: 4,
-                    maxlength: 300
                 }
             },
             infoAddRules: {
+                title:  [
+                    { required: true, message: "请输入成果名称", trigger: "blur" }
+                ],
                 project_id: [
                     { required: true, message: "请输入项目ID", trigger: "blur" }
                 ]
@@ -248,15 +221,15 @@ export default {
                 }
             },
             deep: true
-        }
+        },
 
     },
     mounted() {
-        this.initProjectReport(this.pageSize,this.currentPage);
+        this.initProjectAchi(this.pageSize,this.currentPage);
     },
     methods: {
         // 初始化表格
-        initProjectReport(pageSize, currentPage, val) {
+        initProjectAchi(pageSize, currentPage, val) {
             let params = {
                 user_id: this.$store.state.user.user_id,
                 usertype: this.$store.state.user.usertype,
@@ -265,22 +238,21 @@ export default {
             }
             let sub_time = moment().format('YYYY-MM-DD');
             axios
-            .get('/api/projectReport/queryReport',{params})
+            .get('/api/projectAchi/queryprojectAchiList',{params})
             .then(res => {
                 if(res.data.code === 200) {
                     let projectRes = res.data.data;
                     this.totalCount = projectRes.total;
-                    this.tableData = projectRes.reportList || [];
+                    this.tableData = projectRes.projectAchiList || [];
                     for(let i =0; i< this.tableData.length; i++) {
                         if(this.usertype === '学生') {
-                            if(this.tableData[i].report_status === '未审核' &&
-                                util.diffStrTime(sub_time,this.tableData[i].deadline)) {
+                            if(util.diffStrTime(sub_time,this.tableData[i].deadline)) {
                                 this.tableData[i].isShowEditBtn = true;
                             } else {
                                 this.tableData[i].isShowEditBtn = false;
                             }
                         } else {
-                            this.tableData[i].isShowEditBtn = true;
+                            this.tableData[i].isShowEditBtn = false;
                         }
                     }
                     this.currentPage = val || 1;
@@ -333,23 +305,47 @@ export default {
         receiveInfo(addform) {
             this.showInfoAdd = false;
             if (addform !== undefined) {
-                let params = {
-                    ...addform,
-                    report_date: moment().format('YYYY-MM-DD'),
-                    report_time: moment().format('HH:mm:ss'),
-                    report_status: '未审核',
-                    report_comment: '',
-                    user_id: this.valueLabelMap.user_id
+                let project_id = {
+                    project_id: addform.project_id
                 }
                 axios
-                .post('/api/projectReport/inster', params)
+                .post('/api/projectAchi/queryAchiByProId', project_id)
                 .then(res => {
                     if(res.data.code === 200) {
-                        this.initProjectReport(this.pageSize,this.currentPage)
-                        this.$message({
-                            message: `添加成功`,
-                            type: 'success'
-                        }); 
+                        if(res.data.data.length > 0 ){
+                            this.$message({
+                                message: `ID为${res.data.data[0].project_id}的${res.data.data[0].project_name}项目
+                                已经提交过项目成果了，提交者ID为${res.data.data[0].user_id},姓名是${res.data.data[0].username}`,
+                                type: 'warning'
+                            });
+                        } else {
+                            
+                            // 添加
+                            let params = {
+                                ...addform,
+                                submit_date: moment().format('YYYY-MM-DD'),
+                                submit_time: moment().format('HH:mm:ss'),
+                                user_id: this.valueLabelMap.user_id
+                            }
+                            axios
+                            .post('/api/projectAchi/inster', params)
+                            .then(res => {
+                                if(res.data.code === 200) {
+                                    this.initProjectAchi(this.pageSize,this.currentPage)
+                                    this.$message({
+                                        message: `添加成功`,
+                                        type: 'success'
+                                    }); 
+                                }
+                            })
+                            .catch(err => {
+                                console.log(err);
+                                this.$message({
+                                    message: `链接发生错误`,
+                                    type: 'error'
+                                });
+                            })
+                        }
                     }
                 })
                 .catch(err => {
@@ -359,8 +355,11 @@ export default {
                         type: 'error'
                     });
                 })
+
+                
             }
         },
+
         // 搜索按钮相关函数
         enterFilter() {
             // 如果不是管理员的用户，只能查找自己的日报信息
@@ -381,7 +380,7 @@ export default {
             if(this.isFilterIng) {
                 console.log('退出筛选');
                 this.filter = util.resetObject(this.filter);
-                this.initProjectReport(this.pageSize, this.currentPage);
+                 this.initProjectAchi(this.pageSize, this.currentPage);
             }
             else {
                 console.log('进入筛选');
@@ -390,10 +389,10 @@ export default {
         },
         filterData(params) {
             axios
-            .post('/api/projectReport/queryByFilter', params)
+            .post('/api/projectAchi/queryByFilter', params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.tableData = res.data.data.reportList || [];
+                    this.tableData = res.data.data.achiList || [];
                     this.totalCount = res.data.data.total;
                 } else {
                     this.$message({
@@ -412,35 +411,36 @@ export default {
         },
         receiveFilter(filterDate) {
             if (this.isFirstFilter && filterDate !== undefined) {
-                console.log(filterDate.report_date);
+ 
                 let filter;
-                if(filterDate.report_date) {
-                    let date = filterDate.report_date;
-                    let report_date = moment(date).format('YYYY-MM-DD');
-                    delete filterDate.report_date;
+                if(filterDate.submit_date) {
+                    let date = filterDate.submit_date;
+                    let submit_date = moment(date).format('YYYY-MM-DD');
+                    delete filterDate.submit_date;
 
-                    filter = {
+                    let filter = {
                         ...filterDate,
-                        report_date: report_date
+                        submit_date: submit_date
                     }
                 } else {
                     filter = {
                         ...filterDate
                     }
                 }
-
+                
                 this.filter = filter;
                 let params = {
                     filter,
                     pageSize:this.pageSize,
                     currentPage:this.currentPage
                 }
+                console.log(params);
                 this.filterData(params);
             } else if (this.isFirstFilter && filterDate === undefined) {
                 let  filter = {
-                    report_id: "",
-                    report_date: "",
-                    report_status: "",
+                    delivery_id: "",
+                    title: "",
+                    submit_date: "",
                     project_id: "", 
                     user_id: "", 
                 }
@@ -452,12 +452,12 @@ export default {
 
         // 标签的key格式化器
         keyFormater(value) {
+
             if (!value) return "";
             value = value.toString();
             return Object.assign({}, this.keyFormatMap, this.expandFormatMap, this.hideMap)[value];
         },
         async inputChange(oldObj, newObj) {
-            // 提交一个日报，下拉选中的响应事件
             if(oldObj && newObj.label === '项目ID') {
                 let params = {
                     project_id: oldObj
@@ -487,46 +487,18 @@ export default {
 
         // 更多按钮
         handleMore(index, row) {
-            this.$router.push(`/projectReportDetail/${row.report_id}/ischeck`);
+            this.$router.push(`/projectAchiDetail/${row.delivery_id}/ischeck`);
         },
         // 编辑按钮
         handleEdit(index, row) {
-            this.$router.push(`/projectReportDetail/${row.report_id}/isedit`);
-        },
-        // 删除按钮
-        handleDelete(index, row) {
-            let params = {
-                report_id: row.report_id
-            }
-            axios
-            .post('/api/projectReport/deleteReport',params)
-            .then(res => {
-                if(res.data.code === 200) {
-                    this.initProjectReport(this.pageSize, currentPage);
-                    this.$message({
-                        message: `删除成功`,
-                        type: 'success'
-                    });
-                } else {
-                    this.$message({
-                        type: 'warning',
-                        message: `数据库操作失败错误代码${res.data.code}`
-                    });
-                }
-            })
-            .catch(err => {
-                this.$message({
-                    message: `链接发生错误`,
-                    type: 'error'
-                });
-            })
+            this.$router.push(`/projectAchiDetail/${row.delivery_id}/isedit`);
         },
         // 分页操作按钮
         handleCurrentChange(val) {
             console.log(`当前页: ${val}`);
             let currentPage = val;
             if(this.tagEmpty) {
-                this.initProjectReport(this.pageSize, currentPage,val);
+                this.initProjectAchi(this.pageSize, currentPage,val);
             } else {
                 let params = {
                     filter: this.filter,

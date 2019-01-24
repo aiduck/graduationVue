@@ -59,7 +59,6 @@
                             v-model="filter[key]"
                             align="right"
                             type="date"
-                            value-format="yyyy-mm-dd"
                             placeholder="选择日期"
                             clearable>
                         </el-date-picker>

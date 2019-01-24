@@ -98,7 +98,8 @@
 import axios from '../../utils/axiosHttp.js';
 import util from '../../utils/utils.js';
 import FilterBox from "../common/FilterBox";
-import AddBox from '../common/AddBox'
+import AddBox from '../common/AddBox';
+import moment from 'moment';
 export default {
     name: 'ProjectInfo',
     components: { FilterBox, AddBox },
@@ -111,7 +112,6 @@ export default {
                 // 格式化标签映射表
                 project_id: "项目ID",
                 project_name: "项目名称",
-               
                 course_name: "课程名称",
                 status: "项目状态",
                 is_choose: "是否可选"
@@ -120,6 +120,7 @@ export default {
                 course_id: "课程ID",
                 project_content: "项目内容",
                 target: "项目目标",
+                deadline: "项目截止日期"
             },
             hideMap: {},
             // 表格页码参数
@@ -213,6 +214,10 @@ export default {
                     label: "是否可选",
                     inputType: 1 // 1 代表下拉框
                 },
+                deadline: {
+                    label: "截止日期",
+                    inputType: 5
+                },
                 project_content: {
                     label: "项目内容",
                     inputType: 4,
@@ -222,7 +227,7 @@ export default {
                     label: "项目目标",
                     inputType: 4,
                     maxlength: 100
-                },
+                }, 
             },
             infoAddRules: {
                 project_id: [
@@ -233,9 +238,11 @@ export default {
                 ],
                 course_id: [
                     { required: true, message: "请输入课程ID", trigger: "blur" }
-                ]
+                ],
+                deadline: [
+                    { required: true, message: "请输入项目截止日期", trigger: "blur" }
+                ],
             },
-            // addSelectShow: '',
         }
     },
     created() {
@@ -265,8 +272,6 @@ export default {
 
     },
     mounted() {
-        this.imFile = document.getElementById('imFile');
-        this.outFile = document.getElementById('downlink')
         this.initCourseInfo();
         this.initProject(this.pageSize,this.currentPage);
     },
@@ -335,11 +340,16 @@ export default {
             this.showInfoAdd = true;
         },
         receiveInfo(addform) {
-            // console.log(addform);
             this.showInfoAdd = false;
             if (addform !== undefined) {
+                let deadline = moment(addform.deadline).format('YYYY-MM-DD')
+                delete addform.deadline;
+                let params = {
+                    ...addform,
+                    deadline: deadline
+                }
                 axios
-                .post("/api/projectInfo/insterProject",addform)
+                .post("/api/projectInfo/insterProject",params)
                 .then(res => {
                     if(res.data.code === 200) {
                         this.initProject(this.pageSize, this.currentPage)
@@ -361,8 +371,7 @@ export default {
                         type: 'error'
                     });
                 })
-            }
-           
+            } 
         },
         // 搜索按钮相关函数
         enterFilter() {

@@ -1,3 +1,5 @@
+
+import moment from 'moment';
 /**
  * 格式化时间
  * @returns ‘2018-09-10’
@@ -113,6 +115,23 @@ function setDefaultRoute(routes) {
 }
 
 
+/**
+ *  比较两个时间yyyy-mm-dd字符串的大小
+ * @param {*} curtime  当前的时间
+ * @param {*} strtime  传入的比较对象
+ */
+function diffStrTime(curtime,strtime) {
+    let curdate = moment(curtime).toDate();
+    let strdate = moment(strtime).toDate();
+    // 当前者大的时候会 输出大于0
+    // 相等 = 0
+    // 前者小的时候 输出小于0
+    if(moment(curdate).diff(strdate) > 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
 
 let utils = {
     formatDate,
@@ -122,5 +141,6 @@ let utils = {
     resetObject,
     recursionRouter,
     setDefaultRoute,
+    diffStrTime
 }
 export default utils

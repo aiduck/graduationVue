@@ -120,8 +120,9 @@ export default {
                 team_id: "项目组ID",
                 course_id: "课程ID",
                 class_id: "教学班级ID",
+                project_id: "项目ID",
                 user_id: "负责人ID",
-                project_id: "教学班级ID"
+                
             },
             hideMap: {},
             // 表格页码参数
