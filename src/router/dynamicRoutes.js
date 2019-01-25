@@ -30,6 +30,10 @@ const projectReportDetail = () => import('@/components/page/ProjectReportDetail.
 const ProjectAchi = () => import('@/components/page/ProjectAchi.vue')
 const ProjectAchiDetail = () => import('@/components/page/ProjectAchiDetail.vue')
 
+const ProjectSelfEval = () => import('@/components/page/ProjectSelfEval.vue')
+const ProjectSelfEvalDetail = () => import('@/components/page/ProjectSelfEvalDetail.vue')
+
+
 
 // 所有路由
 const dynamicRoutes =  [
@@ -174,6 +178,18 @@ const dynamicRoutes =  [
     name: 'projectAchiDetail',
     component: ProjectAchiDetail,
     meta: { title: '项目成果详细信息' }
+  },
+  {
+    path: '/projectSelfEval',
+    name: 'projectSelfEval',
+    component: ProjectSelfEval,
+    meta: { title: '项目自评' }
+  },
+  {
+    path: '/projectSelfEvalDetail/:id/:isCheck',
+    name: 'projectSelfEvalDetail',
+    component: ProjectSelfEvalDetail,
+    meta: { title: '项目自评详细信息' }
   },
   
 ]

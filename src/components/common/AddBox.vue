@@ -75,6 +75,14 @@
                             placeholder="选择日期"
                             clearable>
                         </el-date-picker>
+                        <el-input
+                        type="number"
+                        min="0" 
+                        max="100"
+                        v-if="value.inputType === 6"
+                        v-model="addForm[key]"
+                        :placeholder="placeholderFilter(0, value.label)">
+                        </el-input>
                     </el-form-item>
                 </el-col>
             </el-row>

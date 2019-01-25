@@ -72,10 +72,10 @@
                             size="small"
                             type="success"
                             @click="handleEdit(scope.$index, scope.row)">
-                            {{usertype === '学生'? '编辑' : '评定'}}
+                            '编辑'
                         </el-button>
                         <el-button
-                            v-if="scope.row.isShowEditBtn && usertype === '学生'"
+                            v-if="scope.row.isShowEditBtn"
                             size="small"
                             type="danger"
                             @click="handleDelete(scope.$index, scope.row)">删除</el-button>
@@ -111,22 +111,21 @@ export default {
             // 表格头部
             keyFormatMap: {
                 // 格式化标签映射表   
-                report_date: "提交日期",
+                date: "提交日期",
                 deadline: "项目截止日期",
-                report_status: "审核状态",
+                score: "自评分数",
                 project_id: "项目id",
                 user_id: "提交者",
             },
             expandFormatMap: {
                 //
-                report_time: "提交时间",  
-                report_work: "工作内容",
-                report_problem:"存在问题",
-                report_plan: "工作计划",
-                report_comment: "日报评语",
+                time: "提交时间",  
+                tasks: "工作内容",
+                workload:"工作量描述",
+                assessment: "工作自评",
             },
             hideMap: {
-                report_id: "日报id",
+                id: "自评Id",
             },
             // 表格页码参数
             pageSize: 10, //每页大小
@@ -141,29 +140,15 @@ export default {
             valueLabelMap:{
                 project_id: [],
                 user_id: '',
-                report_status: [
-                    {
-                        value: "未审核",
-                        label: "未审核"
-                    },
-                    {
-                        value: "已审核",
-                        label: "已审核"
-                    }
-                ],
             },
             filterTmpl: {
-                report_id: {
-                    label: "日报ID",
+                id: {
+                    label: "自评ID",
                     inputType: 0 // 0 代表 input
                 },
-                report_date: {
+                date: {
                     label: "提交日期",
                     inputType: 4 // 0 代表 时间选择器
-                },
-                report_status: {
-                    label: "审核状态",
-                    inputType: 1 // 1 代表 时间选择器
                 },
                 project_id: {
                     label: "项目ID",
@@ -176,9 +161,8 @@ export default {
             },
             filter: {
                 //搜索条件
-                report_id: "",
-                report_date: "",
-                report_status: "",
+                id: "",
+                date: "",
                 project_id: "", 
                 user_id: "", 
             },
@@ -199,26 +183,43 @@ export default {
                     disabled: true,
                     addSelectShow:''
                 },
-                report_work: {
+                score: {
+                    label: "个人评分（100分制)",
+                    inputType: 6
+                },
+                tasks: {
                     label: "工作内容",
-                    inputType: 4, // 0.1 表示只能看不能输入的input
+                    inputType: 4,
                     maxlength: 500
                 },
-                report_problem: {
-                    label: "存在问题",
+                workload: {
+                    label: "工作量描述",
                     inputType: 4,
-                    maxlength: 300
+                    maxlength: 100
                 },
-                report_plan: {
-                    label: "工作计划",
+                assessment: {
+                    label: "工作自评",
                     inputType: 4,
-                    maxlength: 300
-                }
+                    maxlength: 100
+                },
+               
             },
             infoAddRules: {
                 project_id: [
                     { required: true, message: "请输入项目ID", trigger: "blur" }
-                ]
+                ],
+                score:  [
+                    { required: true, message: "请输入自评分数", trigger: "blur" }
+                ],
+                tasks:  [
+                    { required: true, message: "请输入工作内容", trigger: "blur" }
+                ],
+                workload: [
+                    { required: true, message: "请输入工作量描述", trigger: "blur" }
+                ],
+                assessment: [
+                    { required: true, message: "请输入工作自评", trigger: "blur" }
+                ],
             },
         }
     },
@@ -252,11 +253,11 @@ export default {
 
     },
     mounted() {
-        this.initProjectReport(this.pageSize,this.currentPage);
+        this.initProjectSelf(this.pageSize,this.currentPage);
     },
     methods: {
         // 初始化表格
-        initProjectReport(pageSize, currentPage, val) {
+        initProjectSelf(pageSize, currentPage, val) {
             let params = {
                 user_id: this.$store.state.user.user_id,
                 usertype: this.$store.state.user.usertype,
@@ -265,22 +266,21 @@ export default {
             }
             let sub_time = moment().format('YYYY-MM-DD');
             axios
-            .get('/api/projectReport/queryReport',{params})
+            .get('/api/projectSelfEval/querySelf',{params})
             .then(res => {
                 if(res.data.code === 200) {
                     let projectRes = res.data.data;
                     this.totalCount = projectRes.total;
-                    this.tableData = projectRes.reportList || [];
+                    this.tableData = projectRes.selfList || [];
                     for(let i =0; i< this.tableData.length; i++) {
                         if(this.usertype === '学生') {
-                            if(this.tableData[i].report_status === '未审核' &&
-                                util.diffStrTime(sub_time,this.tableData[i].deadline)) {
+                            if(util.diffStrTime(sub_time,this.tableData[i].deadline)) {
                                 this.tableData[i].isShowEditBtn = true;
                             } else {
                                 this.tableData[i].isShowEditBtn = false;
                             }
                         } else {
-                            this.tableData[i].isShowEditBtn = true;
+                            this.tableData[i].isShowEditBtn = false;
                         }
                     }
                     this.currentPage = val || 1;
@@ -337,7 +337,7 @@ export default {
                     project_id: addform.project_id
                 }
                 axios
-                .post('/api/projectReport/queryRepByProId', project_id)
+                .post('/api/projectSelfEval/querySelfByProId', project_id)
                 .then(res => {
                     if(res.data.code === 200) {
                         if(res.data.data.length > 0){
@@ -350,18 +350,15 @@ export default {
                             // 添加
                             let params = {
                                 ...addform,
-                                report_date: moment().format('YYYY-MM-DD'),
-                                report_time: moment().format('HH:mm:ss'),
-                                report_status: '未审核',
-                                report_comment: '',
+                                date: moment().format('YYYY-MM-DD'),
+                                time: moment().format('HH:mm:ss'),
                                 user_id: this.valueLabelMap.user_id
                             }
-                            console.log(params);
                             axios
-                            .post('/api/projectReport/inster', params)
+                            .post('/api/projectSelfEval/inster', params)
                             .then(res => {
                                 if(res.data.code === 200) {
-                                    this.initProjectReport(this.pageSize,this.currentPage)
+                                    this.initProjectSelf(this.pageSize,this.currentPage)
                                     this.$message({
                                         message: `添加成功`,
                                         type: 'success'
@@ -385,13 +382,9 @@ export default {
                         type: 'error'
                     });
                 })
-
-
-
-
-                
             }
         },
+
         // 搜索按钮相关函数
         enterFilter() {
             // 如果不是管理员的用户，只能查找自己的日报信息
@@ -412,7 +405,7 @@ export default {
             if(this.isFilterIng) {
                 console.log('退出筛选');
                 this.filter = util.resetObject(this.filter);
-                this.initProjectReport(this.pageSize, this.currentPage);
+                this.initProjectSelf(this.pageSize, this.currentPage);
             }
             else {
                 console.log('进入筛选');
@@ -421,10 +414,10 @@ export default {
         },
         filterData(params) {
             axios
-            .post('/api/projectReport/queryByFilter', params)
+            .post('/api/projectSelfEval/queryByFilter', params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.tableData = res.data.data.reportList || [];
+                    this.tableData = res.data.data.selfList || [];
                     this.totalCount = res.data.data.total;
                 } else {
                     this.$message({
@@ -443,23 +436,19 @@ export default {
         },
         receiveFilter(filterDate) {
             if (this.isFirstFilter && filterDate !== undefined) {
-                console.log(filterDate.report_date);
                 let filter;
-                if(filterDate.report_date) {
-                    let date = filterDate.report_date;
-                    let report_date = moment(date).format('YYYY-MM-DD');
-                    delete filterDate.report_date;
-
+                if(filterDate.date) {
+                    let date = moment(filterDate.date).format('YYYY-MM-DD');
+                    delete filterDate.date;
                     filter = {
                         ...filterDate,
-                        report_date: report_date
+                        date: date
                     }
                 } else {
                     filter = {
                         ...filterDate
                     }
                 }
-
                 this.filter = filter;
                 let params = {
                     filter,
@@ -515,25 +504,24 @@ export default {
             }
         },
         inputClear(type) {},
-
         // 更多按钮
         handleMore(index, row) {
-            this.$router.push(`/projectReportDetail/${row.report_id}/ischeck`);
+            this.$router.push(`/projectSelfEvalDetail/${row.id}/ischeck`);
         },
         // 编辑按钮
         handleEdit(index, row) {
-            this.$router.push(`/projectReportDetail/${row.report_id}/isedit`);
+            this.$router.push(`/projectSelfEvalDetail/${row.id}/isedit`);
         },
         // 删除按钮
         handleDelete(index, row) {
             let params = {
-                report_id: row.report_id
+                id: row.id
             }
             axios
-            .post('/api/projectReport/deleteReport',params)
+            .post('/api/projectSelfEval/deleteSelf',params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.initProjectReport(this.pageSize, this.currentPage);
+                    this.initProjectSelf(this.pageSize, this.currentPage);
                     this.$message({
                         message: `删除成功`,
                         type: 'success'
@@ -557,7 +545,7 @@ export default {
             console.log(`当前页: ${val}`);
             let currentPage = val;
             if(this.tagEmpty) {
-                this.initProjectReport(this.pageSize, currentPage,val);
+                this.initProjectSelf(this.pageSize, currentPage,val);
             } else {
                 let params = {
                     filter: this.filter,
