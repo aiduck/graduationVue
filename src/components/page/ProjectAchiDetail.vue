@@ -50,11 +50,23 @@
                             </el-form-item>
                         </el-col>
                     </el-row>
+                     <el-row>
+                        <el-col :span="12">
+                            <el-form-item label="是否收藏">
+                                <el-input v-model="form.delivery.is_collect" disabled></el-input>
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="12" v-if="!isstudent">
+                            <el-form-item label="是否收藏">
+                                <el-button type="danger"  @click="handleCollect">{{ form.delivery.is_collect == '收藏' ? '取消收藏' : '点击收藏'}}</el-button>
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <!-- 项目文件提交  -->
                     <div class="form-hr">
                         <span class="form-tip">成果文件</span>
                         <hr>
                     </div>
-                    <!-- 项目文件提交  -->
                     <el-upload
                         class="upload-demo"
                         ref="upload"
@@ -71,7 +83,7 @@
                         <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload"  :disabled="ischeck">上传到服务器</el-button>
                         <div v-if="this.fileList.length > 0" style="display:inline-block; float: right;">
                             <el-button slot="trigger" size="small" type="danger"  @click="deleteAllFile"  :disabled="ischeck">全部删除</el-button>
-                            <el-button slot="trigger" size="small" type="primary"  @click="downloadFinishFile"  :disabled="ischeck">下载附件</el-button>
+                            <el-button slot="trigger" size="small" type="primary"  @click="downloadFinishFile"  >下载附件</el-button>
                         </div>
                     </el-upload>
                     <!-- 项目信息 -->
@@ -265,14 +277,16 @@ export default {
                     delivery_id: '',
                     title: '',
                     submit_date: '',
-                    submit_time: ''
+                    submit_time: '',
+                    is_collect: ''
                 },
                 project: {
                     project_id: "",
                     project_name: "",
                     project_content: "",
                     target: "",
-                    deadline: ""
+                    deadline: "",
+                    course_id: ""
                 },   
                 team: {
                     team_id: "",
@@ -441,7 +455,6 @@ export default {
                 });
             })
         },
-
         // 去修改界面
         leaveFor() {
             this.$router.push(`/projectAchiDetail/${this.$route.params.deliveryId}/isedit`);
@@ -542,6 +555,49 @@ export default {
                 };
                 document.body.appendChild(iframe);
             }
+        },
+        // 是否收藏
+        handleCollect() {
+            let collect = this.form.delivery.is_collect === '未收藏' ? '收藏' : '未收藏';
+            let projectObj;
+            if(collect === '收藏') {
+                projectObj = {
+                    date: moment().format('YYYY-MM-DD'),
+                    project_id: this.form.delivery.project_id,
+                    course_id: this.form.project.course_id,
+                }
+            } else if(collect === '未收藏') {
+                projectObj = {
+                    project_id: this.form.delivery.project_id,
+                }
+            }
+            let params = {
+                delivery_id: this.$route.params.deliveryId,
+                is_collect: collect,
+                projectObj
+            }
+            axios
+            .post('/api/projectAchi/collectProjectCase',params)
+            .then(res => {
+                if(res.data.code === 200) {
+                    this.initProjectInfo();
+                    this.$message({
+                        type: 'success',
+                        message: `修改成功`
+                    });
+                }  else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
+            })
+            .catch(err => {
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
         }
     }
 }

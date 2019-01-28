@@ -114,7 +114,9 @@ export default {
             },
             expandFormatMap: {
                 // delivery_id: "成果id",
-                submit_time: "提交时间",  
+                submit_time: "提交时间",
+                is_collect: "是否收藏"
+
             },
             hideMap: {
                 delivery_id: "成果id",
@@ -132,6 +134,16 @@ export default {
             valueLabelMap:{
                 project_id: [],
                 user_id: '',
+                is_collect: [
+                    {
+                        label: '收藏',
+                        value: '收藏'
+                    },
+                    {
+                        label: '未收藏',
+                        value: '未收藏'
+                    }
+                ]
             },
             filterTmpl: {
                 delivery_id: {
@@ -153,6 +165,10 @@ export default {
                 user_id: {
                     label: "提交者ID",
                     inputType: 0.2 // 0 代表 input
+                },
+                is_collect: {
+                    label: "是否收藏",
+                    inputType: 1 // 0 代表 input
                 }
             },
             filter: {
@@ -161,7 +177,8 @@ export default {
                 title: "",
                 submit_date: "",
                 project_id: "", 
-                user_id: "", 
+                user_id: "",
+                is_collect: ""
             },
             // 添加表格参数
             showInfoAdd: false,
