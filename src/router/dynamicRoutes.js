@@ -37,6 +37,9 @@ const ProjecCase = () => import('@/components/page/ProjectCase.vue')
 const ProjecCaseDetail = () => import('@/components/page/ProjectCaseDetail.vue')
 
 
+const ProjectScore  = () => import('@/components/page/ProjectScore.vue')
+const ProjectScoreDetail  = () => import('@/components/page/ProjectScoreDetail.vue')
+
 // 所有路由
 const dynamicRoutes =  [
   // {
@@ -194,6 +197,18 @@ const dynamicRoutes =  [
     meta: { title: '项目自评详细信息' }
   },
   {
+    path: '/projectScore',
+    name: 'projectScore',
+    component: ProjectScore,
+    meta: { title: '项目成绩' }
+  },
+  {
+    path: '/projectScoreDetail/:teamId/:isCheck',
+    name: 'projectScoreDetail',
+    component: ProjectScoreDetail,
+    meta: { title: '项目成绩详细信息' }
+  },
+  {
     path: '/projecCase',
     name: 'projecCase',
     component: ProjecCase,
@@ -203,10 +218,9 @@ const dynamicRoutes =  [
     path: '/projecCaseDetail/:id/:isCheck',
     name: 'projecCaseDetail',
     component: ProjecCaseDetail,
-    meta: { title: '项目详细信息' }
+    meta: { title: '项目收藏详细信息' }
   },
-  
-  
+
 ]
 
 

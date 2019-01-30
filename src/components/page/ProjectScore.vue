@@ -36,9 +36,14 @@
                 border
                 style="width: 100%" 
                 ref="multipleTable">
-                <el-table-column
-                    type="index"
-                    width="50">
+                <el-table-column type="expand">
+                    <template slot-scope="props">
+                        <el-form label-position="left" inline class="demo-table-expand">
+                            <el-form-item v-for="(value, key) in expandFormatMap" :key='key' :label="value" class="expandItem">
+                            <span>{{ props.row[key] }}</span>
+                            </el-form-item>
+                        </el-form>
+                    </template>
                 </el-table-column>
                 <el-table-column v-for="(value, key) in keyFormatMap"
                        :label="value"
@@ -54,10 +59,10 @@
                             type="primary"
                             @click="handleMore(scope.$index, scope.row)">更多</el-button>
                         <el-button
-                            v-if="scope.row.isShowEditBtn"
+                            v-if="!isstudent"
                             size="small"
                             type="danger"
-                            @click="handleEdit(scope.$index, scope.row)">取消收藏</el-button>
+                            @click="handleEdit(scope.$index, scope.row)">评定</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -89,17 +94,18 @@ export default {
             // 表格头部
             keyFormatMap: {
                 // 格式化标签映射表   
-                project_id: "项目ID",
                 project_name: "项目名称",
-                course_id: "课程ID",
                 course_name: "课程名称",
-                date: "收藏日期",  
-                user_id: "教师ID"
+                ratio_project: "期末成绩",
+                ratio_usual: "平时成绩",
+                team_id: "项目组ID",
+                user_id: "负责人ID"
             },
-            expandFormatMap: {},
-            hideMap: {
-                id: "案例ID",
+            expandFormatMap: {
+                project_id: "项目ID",
+                course_id: "课程ID",
             },
+            hideMap: {},
             // 表格页码参数
             pageSize: 10, //每页大小
             currentPage: 1, //当前页
@@ -110,17 +116,11 @@ export default {
             isFirstFilter: true,
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
-            valueLabelMap:{
-                project_id: [],
-            },
+            valueLabelMap:{},
             filterTmpl: {
-                id: {
-                    label: "收藏id",
-                    inputType: 0 // 0 代表 input
-                },
-                date: {
-                    label: "收藏日期",
-                    inputType: 4 // 0 代表 时间选择器
+                team_id: {
+                    label: "项目组ID",
+                    inputType: 0 // 0 代表 时间选择器
                 },
                 project_id: {
                     label: "项目ID",
@@ -131,16 +131,15 @@ export default {
                     inputType: 0 // 0 代表 input
                 },
                 user_id: {
-                    label: "教师ID",
+                    label: "负责人ID",
                     inputType: 0 // 0 代表 input
                 }
             },
             filter: {
                 //搜索条件
-                id: "", 
                 project_id: "",
                 course_id: "",
-                date: "",
+                team_id: "",
                 user_id: ""
             },
         }
@@ -153,9 +152,9 @@ export default {
         isFilterIng() {
             return !this.tagEmpty;
         },
-        usertype() {
-            return this.$store.state.user.usertype
-        }
+        isstudent() {
+            return this.$store.state.user.usertype === '学生';
+        },
     },
     watch: {
         // 控制‘筛选条件字样’是否显示
@@ -175,36 +174,24 @@ export default {
 
     },
     mounted() {
-        this.initProjectCase(this.pageSize,this.currentPage);
+        this.initProjectScore(this.pageSize,this.currentPage);
     },
     methods: {
         // 初始化表格
-        initProjectCase(pageSize, currentPage, val) {
+        initProjectScore(pageSize, currentPage, val) {
             let params = {
+                user_id: this.$store.state.user.user_id,
+                usertype: this.$store.state.user.usertype,
                 pageSize: pageSize,
                 currentPage: currentPage
             }
             axios
-            .get('/api/projectAchi/queryAllCase',{params})
+            .get('/api/projectScore/queryProjectScore',{params})
             .then(res => {
                 if(res.data.code === 200) {
                     let projectRes = res.data.data;
                     this.totalCount = projectRes.total;
-                    this.tableData = projectRes.projectCaseList || [];
-                    for(let i =0; i< this.tableData.length; i++) {
-
-                        if(this.usertype !== '学生') {
-                            if(this.tableData[i].user_id === this.$store.state.user.user_id) {
-                           
-                                this.tableData[i].isShowEditBtn = true;
-                            } else {
-                                
-                                this.tableData[i].isShowEditBtn = false;
-                            }
-                        } else {
-                            this.tableData[i].isShowEditBtn = false;
-                        }
-                    }
+                    this.tableData = projectRes.scoreList || [];
                     this.currentPage = val || 1;
                 }  else {
                     this.$message({
@@ -228,7 +215,7 @@ export default {
             if(this.isFilterIng) {
                 console.log('退出筛选');
                 this.filter = util.resetObject(this.filter);
-                this.initProjectCase(this.pageSize, this.currentPage);
+                this.initProjectScore(this.pageSize, this.currentPage);
             }
             else {
                 console.log('进入筛选');
@@ -236,11 +223,12 @@ export default {
             }
         },
         filterData(params) {
+            console.log(params);
             axios
-            .post('/api/projectAchi/queryCaseByFilter', params)
+            .post('/api/projectScore/queryByFilter', params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.tableData = res.data.data.caseList || [];
+                    this.tableData = res.data.data.scoreList || [];
                     this.totalCount = res.data.data.total;
                 } else {
                     this.$message({
@@ -257,38 +245,21 @@ export default {
                 });
             })
         },
-        receiveFilter(filterDate) {
-            if (this.isFirstFilter && filterDate !== undefined) {
-                let filter;
-                if(filterDate.date) {
-               
-                    let date = moment(filterDate.date).format('YYYY-MM-DD');
-                    delete filterDate.date;
+        receiveFilter(filter) {
+            if (this.isFirstFilter && filter !== undefined) {
 
-                    filter = {
-                        ...filterDate,
-                        date: date
-                    }
-                } else {
-                    filter = {
-                        ...filterDate
-                    }
-                }
-
-                this.filter = filter;
                 let params = {
                     filter,
                     pageSize:this.pageSize,
-                    currentPage:this.currentPage
+                    currentPage:this.currentPage,
                 }
                 this.filterData(params);
-            } else if (this.isFirstFilter && filterDate === undefined) {
+            } else if (this.isFirstFilter && filter === undefined) {
                 let  filter = {
-                    report_id: "",
-                    report_date: "",
-                    report_status: "",
-                    project_id: "", 
-                    user_id: "", 
+                    project_id: "",
+                    course_id: "",
+                    team_id: "",
+                    user_id: ""
                 }
                 this.filter = filter;
             }
@@ -307,67 +278,18 @@ export default {
 
         // 更多按钮
         handleMore(index, row) {
-            this.$router.push(`/projecCaseDetail/${row.id}/ischeck`);
+            this.$router.push(`/projectScoreDetail/${row.team_id}/ischeck`);
         },
         // 取消收藏按钮
         handleEdit(index, row) {
-            let params = {
-                project_id: row.project_id
-            }
-            axios
-            .post('/api/projectAchi/queryDelIdByProID',params)
-            .then(res => {
-                if(res.data.code === 200) {
-                    let  projectObj = {
-                        project_id: row.project_id,
-                    }
-                    let params = {
-                        delivery_id: res.data.data.delivery_id,
-                        is_collect: '未收藏',
-                        projectObj
-                    }
-                    axios
-                    .post('/api/projectAchi/collectProjectCase',params)
-                    .then(res => {
-                        if(res.data.code === 200) {
-                            this.initProjectCase(this.pageSize,this.currentPage);
-                            this.$message({
-                                type: 'success',
-                                message: `修改成功`
-                            });
-                        }  else {
-                            this.$message({
-                                type: 'warning',
-                                message: `数据库操作失败错误代码${res.data.code}`
-                            });
-                        }
-                    })
-                    .catch(err => {
-                        this.$message({
-                            message: `链接发生错误`,
-                            type: 'error'
-                        });
-                    })
-                }  else {
-                    this.$message({
-                        type: 'warning',
-                        message: `数据库操作失败错误代码${res.data.code}`
-                    });
-                }
-            })
-            .catch(err => {
-                this.$message({
-                    message: `链接发生错误`,
-                    type: 'error'
-                });
-            })
+            this.$router.push(`/projectScoreDetail/${row.team_id}/isedit`);
         },
         // 分页操作按钮
         handleCurrentChange(val) {
             console.log(`当前页: ${val}`);
             let currentPage = val;
             if(this.tagEmpty) {
-                this.initProjectCase(this.pageSize, currentPage,val);
+                this.initProjectScore(this.pageSize, currentPage,val);
             } else {
                 let params = {
                     filter: this.filter,

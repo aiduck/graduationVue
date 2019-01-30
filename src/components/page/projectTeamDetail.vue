@@ -577,7 +577,8 @@ export default {
             if(val.user_id !== this.form.team.user_id) {
                 let params = {
                     team_id: this.$route.params.teamId,
-                    user_id: val.user_id
+                    user_id: val.user_id,
+                    project_id: this.form.project.project_id
                 }
                 axios
                 .post('/api/projectTeam/deleteTeamMember', params)
@@ -614,7 +615,8 @@ export default {
             }).then(({ value }) => {
                 let params = {
                     team_id: this.$route.params.teamId,
-                    user_id: value
+                    user_id: value,
+                    project_id: this.form.project.project_id
                 }
                 axios
                 .post("/api/projectTeam/insertTeamMember",params)
