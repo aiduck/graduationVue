@@ -70,10 +70,12 @@
                             type="primary"
                             @click="handleMore(scope.$index, scope.row)">更多</el-button>
                         <el-button
+                            v-if="scope.row.isShowEditBtn"
                             size="small"
                             type="success"
                             @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
                         <el-button
+                            v-if="scope.row.isShowEditBtn"
                             size="small"
                             type="danger"
                             @click="handleDelete(scope.$index, scope.row)">删除</el-button>
@@ -259,7 +261,10 @@ export default {
         // 是否显示退出筛选
         isFilterIng() {
             return !this.tagEmpty;
-        }
+        },
+        isstudent() {
+            return this.$store.state.user.usertype === '学生';
+        },
     },
     watch: {
         // 控制‘筛选条件字样’是否显示
@@ -288,7 +293,9 @@ export default {
         initProjectTeam(pageSize, currentPage, val) {
             let params = {
                 pageSize: pageSize,
-                currentPage: currentPage
+                currentPage: currentPage,
+                user_id: this.$store.state.user.user_id,
+                usertype: this.$store.state.user.usertype,
             }
             axios
             .get('/api/projectTeam/queryLimitTeam',{params})
@@ -297,6 +304,22 @@ export default {
                     let teamRes = res.data.data;
                     this.totalCount = teamRes.total;
                     this.tableData = teamRes.teamList || [];
+                    let user_id = this.$store.state.user.user_id;
+                    let usertype = this.$store.state.user.usertype;
+                     for(let i =0; i< this.tableData.length; i++) {
+                        if(usertype === '学生' ) {
+                            if(user_id === this.tableData[i].user_id) {
+                                this.tableData[i].isShowEditBtn = true;
+                            } else {
+                                this.tableData[i].isShowEditBtn = false;
+                            }
+                        } else {
+                            this.tableData[i].isShowEditBtn = true;
+                        }
+                    }
+                    teamRes.teamList.map(item => {
+
+                    });
                     this.currentPage = val || 1;
                 }  else {
                     this.$message({
@@ -345,6 +368,25 @@ export default {
         },
         // 单个添加按钮
         handleAdd() {
+            if(this.isstudent) {
+                delete this.infoAddTmpl.user_id
+                delete this.infoAddTmpl.username
+                this.infoAddTmpl = {
+                    ...this.infoAddTmpl,
+                    user_id: {
+                        label: "学生姓名",
+                        inputType: 0.1, // 0.1 表示只能看不能输入的input
+                        disabled: true,
+                        addSelectShow: this.$store.state.user.user_id
+                    },
+                    username: {
+                        label: "学生名",
+                        inputType: 0.1, // 0.1 表示只能看不能输入的input
+                        disabled: true,
+                        addSelectShow: this.$store.state.user.username
+                    },
+                }
+            }
             this.showInfoAdd = true;
         },
         receiveInfo(addform) {
@@ -472,7 +514,6 @@ export default {
                 });
             })
         },
-        // 添加的时候 =》可选状态的project
         queryProByCourseID(params,type) {
             axios
             .post("/api/projectInfo/queryProByCourseID",params)
@@ -576,8 +617,6 @@ export default {
             })
         },
         async inputChange(oldObj, newObj,from) {
-            
-
             if(newObj.label === '课程ID' || newObj.label === '筛选课程ID') {
                 this.valueLabelMap.class_id = [];
                 this.valueLabelMap.project_id = [];

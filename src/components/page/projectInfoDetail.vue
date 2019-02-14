@@ -68,7 +68,7 @@
                                 <el-input v-model="form.project.status" disabled></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
+                        <el-col :span="12" :disabled="!isstudent">
                             <el-form-item label="状态">
                                 <el-button type="danger" :disabled="ischeck || form.project.is_choose === '不可选'?true:false" @click="handleDelete">{{ form.project.status == '可用' ? '禁用' : '启用'}}</el-button>
                             </el-form-item>
@@ -156,7 +156,7 @@
                     <el-form-item class="footSubmit" size="medium" v-if="!ischeck">
                         <el-button type="primary" @click="onSubmit">确认修改</el-button>
                     </el-form-item>
-                    <el-form-item class="footSubmit" size="medium" v-else>
+                    <el-form-item class="footSubmit" size="medium" v-if="ischeck && !isstudent">
                         <el-button type="primary" @click="leaveFor">前往编辑</el-button>
                     </el-form-item>
                 </el-form>
@@ -200,6 +200,11 @@ export default {
             ischeck: false,
         }
     },
+    computed: {
+        isstudent() {
+            return this.$store.state.user.usertype === '学生';
+        },
+    },
     mounted() {
         this.ischeck = this.$route.params.isCheck === 'ischeck' ? true :false;
         this.initProjectInfo();
@@ -208,6 +213,8 @@ export default {
     watch:{
         // 监听路由变化
         $route(newValue, oldValue){
+            console.log('yhcj');
+            console.log(newValue,oldValue);
             this.ischeck = this.$route.params.isCheck === 'ischeck' ? true :false;
         }
     },

@@ -16,7 +16,7 @@
                 </el-col>
                 <el-col :span="16">
                     <div class="handle-box">
-                        <el-button type="primary"  @click="handleAdd">添加</el-button>
+                        <el-button v-if="!isstudent" type="primary"  @click="handleAdd">添加</el-button>
                         <el-button type="primary"  @click="enterFilter">{{ isFilterIng ? '退出筛选' : '筛选'}}</el-button>
                     </div>
                 </el-col>
@@ -68,10 +68,12 @@
                             type="primary"
                             @click="handleMore(scope.$index, scope.row)">更多</el-button>
                         <el-button
+                            v-if="!isstudent"
                             size="small"
                             type="success"
                             @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
                         <el-button
+                            v-if="!isstudent"
                             size="small"
                             type="danger"
                             :disabled="scope.row.is_choose === '不可选' ?true:false"
@@ -249,6 +251,9 @@ export default {
 
     },
     computed: {
+        isstudent() {
+            return this.$store.state.user.usertype === '学生';
+        },
         // 是否显示退出筛选
         isFilterIng() {
             return !this.tagEmpty;

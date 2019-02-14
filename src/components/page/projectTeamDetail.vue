@@ -58,7 +58,7 @@
                     </el-row>
                     <el-row>
                         <el-col :span="24">
-                            <el-button class="form-add"  size="medium" type="primary" :disabled="ischeck" @click="handleAdd">添加项目成员</el-button>  
+                            <el-button class="form-add"  size="medium" type="primary" :disabled="ischeck" @click="handleDialog">添加项目成员</el-button>  
                         </el-col>
                     </el-row>
 
@@ -254,12 +254,31 @@
                     <el-form-item class="footSubmit" size="medium" v-if="!ischeck">
                         <el-button type="primary" @click="onSubmit">确认修改</el-button>
                     </el-form-item>
-                    <el-form-item class="footSubmit" size="medium" v-else>
+                    <el-form-item class="footSubmit" size="medium" v-if="ischeck && this.form.team.user_id === storeUserId">
                         <el-button type="primary" @click="leaveFor">前往编辑</el-button>
                     </el-form-item>
                 </el-form>
             </div>
         </div>
+
+        <el-dialog title="输入用户名称" :visible.sync="dialogFormVisible">
+            <el-form :model="form_dialog">
+                <el-form-item label="用户名称" :label-width="formLabelWidth">
+                    <el-select v-model="form_dialog.user_id" placeholder="请选择用户名称">
+                        <el-option
+                            v-for="item in user_id"
+                            :key="item.value"
+                            :label="item.label"
+                            :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="handleAdd">确 定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -304,6 +323,17 @@ export default {
             isSelectCouserId: true,
             isSelectClassId: true,
             ischeck: false,
+            dialogFormVisible: false,
+            form_dialog: {
+                user_id: {},
+            },
+            formLabelWidth: '120px',
+        
+        }
+    },
+    computed: {
+        storeUserId() {
+            return this.$store.state.user.user_id
         }
     },
     mounted() {
@@ -349,6 +379,7 @@ export default {
             })
         },
         queryStuByClassID(params) {
+            this.user_id = [];
             axios
             .post("/api/classInfo/queryStuByClassId",params)
             .then(res => {
@@ -540,20 +571,108 @@ export default {
         },
         // 确认修改
         onSubmit() {
-            let params = {
-                form: {
-                   ...this.form.team
+            if(this.checkIsTeamUser()) {
+                this.$message.error('不是项目小组负责人，不能操作');
+            } else {
+                let params = {
+                    form: {
+                    ...this.form.team
+                    }
+                }
+                console.log(params);
+                axios
+                .post('/api/projectTeam/updateProjectTeamInfo',params)
+                .then(res => {
+                    if(res.data.code === 200) {
+                        this.$message({
+                            message: `修改成功`,
+                            type: 'success'
+                        });
+                    } else {
+                        this.$message({
+                            type: 'warning',
+                            message: `数据库操作失败错误代码${res.data.code}`
+                        });
+                    }
+                })
+                .catch(err => {
+                    this.$message({
+                        message: `链接发生错误`,
+                        type: 'error'
+                    });
+                })
+            }
+            
+        },
+        // 去修改界面
+        leaveFor() {
+            this.$router.push(`/projectTeamDetail/${this.$route.params.teamId}/isedit`);   
+        },
+        checkIsTeamUser() {
+            return (this.$store.state.user.usertype === '学生') && (this.storeUserId !== this.form.team.user_id)
+        },
+        // 删除成员
+        handleDelete(val) {
+            if(this.checkIsTeamUser()) {
+               this.$message.error('不是项目小组负责人，不能操作');
+            } else {
+                if(val.user_id !== this.form.team.user_id) {
+                    let params = {
+                        team_id: this.$route.params.teamId,
+                        user_id: val.user_id,
+                        project_id: this.form.project.project_id
+                    }
+                    axios
+                    .post('/api/projectTeam/deleteTeamMember', params)
+                    .then(res => {
+                        if(res.data.code === 200) {
+                            // console.log(res);
+                            this.initTeamInfo();
+                        } else {
+                            this.$message({
+                                type: 'warning',
+                                message: `数据库操作失败错误代码${res.data.code}`
+                            });
+                        }
+                    }) 
+                    .catch(err => {
+                        this.$message({
+                            message: `链接发生错误`,
+                            type: 'error'
+                        });
+                    })
+                } else {
+                    this.$message({
+                        message: `不可以删除负责人`,
+                        type: 'error'
+                    });
                 }
             }
-            console.log(params);
+        },
+        // 添加成员
+        handleDialog() {
+            if(this.checkIsTeamUser()) {
+               this.$message.error('不是项目小组负责人，不能操作');
+            } else {
+                let params = {
+                    class_id: this.form.team.class_id
+                };
+                this.queryStuByClassID(params);
+                this.dialogFormVisible = true;
+            }
+        },
+        handleAdd() {
+            let params = {
+                team_id: this.$route.params.teamId,
+                user_id: this.form_dialog.user_id,
+                project_id: this.form.project.project_id
+            }
             axios
-            .post('/api/projectTeam/updateProjectTeamInfo',params)
+            .post("/api/projectTeam/insertTeamMember",params)
             .then(res => {
                 if(res.data.code === 200) {
-                    this.$message({
-                        message: `修改成功`,
-                        type: 'success'
-                    });
+                    this.initTeamInfo();
+                    this.dialogFormVisible = false;
                 } else {
                     this.$message({
                         type: 'warning',
@@ -562,88 +681,12 @@ export default {
                 }
             })
             .catch(err => {
+                console.log(err);
                 this.$message({
                     message: `链接发生错误`,
                     type: 'error'
                 });
             })
-        },
-        // 去修改界面
-        leaveFor() {
-            this.$router.push(`/projectTeamDetail/${this.$route.params.teamId}/isedit`);   
-        },
-        // 删除成员
-        handleDelete(val) {
-            if(val.user_id !== this.form.team.user_id) {
-                let params = {
-                    team_id: this.$route.params.teamId,
-                    user_id: val.user_id,
-                    project_id: this.form.project.project_id
-                }
-                axios
-                .post('/api/projectTeam/deleteTeamMember', params)
-                .then(res => {
-                    if(res.data.code === 200) {
-                        // console.log(res);
-                        this.initTeamInfo();
-                    } else {
-                        this.$message({
-                            type: 'warning',
-                            message: `数据库操作失败错误代码${res.data.code}`
-                        });
-                    }
-                }) 
-                .catch(err => {
-                    this.$message({
-                        message: `链接发生错误`,
-                        type: 'error'
-                    });
-                })
-            } else {
-                this.$message({
-                    message: `不可以删除负责人`,
-                    type: 'error'
-                });
-            }
-            
-        },
-        // 添加成员
-        handleAdd() {
-            this.$prompt('请输入学生ID', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-            }).then(({ value }) => {
-                let params = {
-                    team_id: this.$route.params.teamId,
-                    user_id: value,
-                    project_id: this.form.project.project_id
-                }
-                axios
-                .post("/api/projectTeam/insertTeamMember",params)
-                .then(res => {
-                    if(res.data.code === 200) {
-                        // console.log(res);
-                        this.initTeamInfo();
-                    } else {
-                        this.$message({
-                            type: 'warning',
-                            message: `数据库操作失败错误代码${res.data.code}`
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.log(err);
-                    this.$message({
-                        message: `链接发生错误`,
-                        type: 'error'
-                    });
-                })
-            }).catch(() => {
-                this.$message({
-                    type: 'info',
-                    message: '取消输入'
-                });       
-            });
         }
     }
 }

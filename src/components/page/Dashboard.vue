@@ -5,28 +5,47 @@
                 <el-row>
                     <el-col>
                         <el-card shadow="hover" class="mgb20">
-                            <div class="user-info">
-                                <img src="static/img/img.jpg" class="user-avator" alt="">
+                            <div class="user-info">    
+                                <img src="http://localhost:4000/uploads/fileDemo/1.jpg-1548640481348.jpg" class="user-avator" alt="点击头像修改个人信息" @click="handleUser">
                                 <div class="user-info-cont">
-                                    <div class="user-info-name">{{name}}</div>
-                                    <div>{{role}}</div>
+                                    <div>{{userInfo.usertype}}</div>
                                 </div>
                             </div>
-                            <div class="user-info-list">上次登录时间：<span>2018-01-01</span></div>
-                            <div class="user-info-list">上次登录地点：<span>东莞</span></div>
+                            <el-row>
+                                <el-col :span="12" class="user-info-list">
+                                    用户：{{userInfo.user_id}}
+                                </el-col>
+                                <el-col :span="12" class="user-info-list">
+                                    用户姓名：{{userInfo.username}}
+                                </el-col>
+                            </el-row>
+                            <el-row>
+                                <el-col :span="12" class="user-info-list">
+                                    邮箱：{{userInfo.email}}
+                                </el-col>
+                                <el-col :span="12" class="user-info-list">
+                                    电话：{{userInfo.telno}}
+                                </el-col>
+                            </el-row>
+                             <el-row>
+                                <el-col :span="12" class="user-info-list">
+                                    地址：{{userInfo.address}}
+                                </el-col>
+                            </el-row>
                         </el-card>
                         <el-card shadow="hover">
                             <div slot="header" class="clearfix">
-                                <span>语言详情</span>
+                                <span>个人技能</span>
+                                <el-button style="float: right; padding: 3px 0" type="text" @click="handleSkill">修改</el-button>
                             </div>
-                            Vue
-                            <el-progress :percentage="57.2" color="#42b983"></el-progress>
-                            JavaScript
-                            <el-progress :percentage="29.8" color="#f1e05a"></el-progress>
-                            CSS
-                            <el-progress :percentage="11.9"></el-progress>
-                            HTML
-                            <el-progress :percentage="1.1" color="#f56c6c"></el-progress>
+                            {{skillList[0].skill_name}}
+                            <el-progress :percentage="skillList[0].skill_num" color="#42b983"></el-progress>
+                            {{skillList[1].skill_name}}
+                            <el-progress :percentage="skillList[1].skill_num" color="#f1e05a"></el-progress>
+                            {{skillList[2].skill_name}}
+                            <el-progress :percentage="skillList[2].skill_num"></el-progress>
+                            {{skillList[3].skill_name}}
+                            <el-progress :percentage="skillList[3].skill_num" color="#f56c6c"></el-progress>
                         </el-card>
                     </el-col>
                 </el-row>
@@ -38,8 +57,8 @@
                             <div class="grid-content grid-con-1">
                                 <i class="el-icon-view grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">1234</div>
-                                    <div>用户访问量</div>
+                                    <div class="grid-num">{{totalNum.userNum}}</div>
+                                    <div>总用户量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -49,8 +68,8 @@
                             <div class="grid-content grid-con-2">
                                 <i class="el-icon-message grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">321</div>
-                                    <div>系统消息</div>
+                                    <div class="grid-num">{{totalNum.projectNum}}</div>
+                                    <div>总项目量</div>
                                 </div>
                             </div>
                         </el-card>
@@ -60,40 +79,83 @@
                             <div class="grid-content grid-con-3">
                                 <i class="el-icon-goods grid-con-icon"></i>
                                 <div class="grid-cont-right">
-                                    <div class="grid-num">5000</div>
-                                    <div>数量</div>
+                                    <div class="grid-num">{{totalNum.achiNum}}</div>
+                                    <div>项目收藏量</div>
                                 </div>
                             </div>
                         </el-card>
                     </el-col>
                 </el-row>
+
                 <el-card shadow="hover" :body-style="{ height: '304px'}">
                     <div slot="header" class="clearfix">
-                        <span>待办事项</span>
-                        <el-button style="float: right; padding: 3px 0" type="text">添加</el-button>
+                        <span>优秀项目介绍</span>
                     </div>
-                    <el-table :data="todoList" :show-header="false" height="304" style="width: 100%;font-size:14px;">
-                        <el-table-column width="40">
-                            <template slot-scope="scope">
-                                <el-checkbox v-model="scope.row.status"></el-checkbox>
-                            </template>
-                        </el-table-column>
-                        <el-table-column>
-                            <template slot-scope="scope">
-                                <div class="todo-item" :class="{'todo-item-del': scope.row.status}">{{scope.row.title}}</div>
-                            </template>
-                        </el-table-column>
-                        <el-table-column width="60">
-                            <template slot-scope="scope">
-                                <i class="el-icon-edit"></i>
-                                <i class="el-icon-delete"></i>
-                            </template>
-                        </el-table-column>
-                    </el-table>
                 </el-card>
-
             </el-col>
         </el-row>
+
+        <el-dialog title="修改个人信息" :visible.sync="dialogFormVisible">
+            <el-form :model="form">
+                <el-form-item label="姓名" :label-width="formLabelWidth">
+                    <el-input v-model="form.username" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="邮箱" :label-width="formLabelWidth">
+                    <el-input v-model="form.email" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="电话" :label-width="formLabelWidth">
+                    <el-input v-model="form.telno" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="地址" :label-width="formLabelWidth">
+                    <el-input v-model="form.address" autocomplete="off"></el-input>
+                </el-form-item>
+
+                <el-row v-if="isstudent">
+                    <el-form-item label="学院" :label-width="formLabelWidth">
+                        <el-select v-model="form.student.college_id" placeholder="请选择活动区域">
+                            <el-option label="区域一" value="shanghai"></el-option>
+                            <el-option label="区域二" value="beijing"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="学院" :label-width="formLabelWidth">
+                        <el-select v-model="form.student.major_id" placeholder="请选择活动区域">
+                            <el-option label="区域一" value="shanghai"></el-option>
+                            <el-option label="区域二" value="beijing"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="学院" :label-width="formLabelWidth">
+                        <el-select v-model="form.student.aclass_id" placeholder="请选择活动区域">
+                            <el-option label="区域一" value="shanghai"></el-option>
+                            <el-option label="区域二" value="beijing"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-row>
+
+                <el-row v-if="isteacher">
+                    <el-form-item label="性别" :label-width="formLabelWidth">
+                        <el-radio-group v-model="form.teacher.sex">
+                            <el-radio :label="1">男</el-radio>
+                            <el-radio :label="2">女</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="职称" :label-width="formLabelWidth">
+                        <el-input v-model="form.teacher.job_title" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="学历" :label-width="formLabelWidth">
+                        <el-input v-model="form.teacher.education" autocomplete="off"></el-input>
+                    </el-form-item>
+                </el-row>
+
+                <el-form-item label="地址" :label-width="formLabelWidth">
+                    <el-input v-model="form.address" autocomplete="off"></el-input>
+                </el-form-item>
+                
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                <el-button type="primary" @click="handleSubmit">确 定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -102,37 +164,78 @@
         name: 'dashboard',
         data() {
             return {
-                name: localStorage.getItem('ms_username'),
-                todoList: [
+                form: {
+                    username:'',
+                    email: '',
+                    telno: '',
+                    address: '',
+                    teacher: {
+                        sex: '',
+                        job_title: '',
+                        education: ''
+                    },
+                    student: {
+                        college_id: '',
+                        major_id: '',
+                        aclass_id: ''
+                    },
+                },
+                dialogFormVisible: false,
+                formLabelWidth: '120px',
+                totalNum: {
+                    userNum: '1234',
+                    projectNum: '5000',
+                    achiNum: '321',
+                },
+                skillList: [
                     {
-                        title: '今天要修复100个bug',
-                        status: false,
+                        skill_name: 'Vue',
+                        skill_num: 57.2
                     },
                     {
-                        title: '今天要修复100个bug',
-                        status: false,
+                        skill_name: 'JavaScript',
+                        skill_num: 29.8
                     },
                     {
-                        title: '今天要写100行代码加几个bug吧',
-                        status: false,
-                    }, {
-                        title: '今天要修复100个bug',
-                        status: false,
+                        skill_name: 'CSS',
+                        skill_num: 11.9
                     },
                     {
-                        title: '今天要修复100个bug',
-                        status: true,
-                    },
-                    {
-                        title: '今天要写100行代码加几个bug吧',
-                        status: true,
+                        skill_name: 'HTML',
+                        skill_num: 1.1
                     }
-                ]
+                ],
+                userInfo: {
+                   usertype: '教师',
+                   user_id: '10000000',
+                   username: '石兴民000',
+                   email: '2099@qq.com',
+                   telno: '13487850087',
+                   address: '浙江省杭州市西湖区'
+                }
             }
         },
         computed: {
-            role() {
-                return this.name === 'admin' ? '超级管理员' : '普通用户';
+            isstudent() {
+                return this.$store.state.user.usertype === '学生';
+            },
+            isteacher() {
+                return this.$store.state.user.usertype === '教师';
+            },
+            isadmin() {
+                return this.$store.state.user.usertype === '管理员';
+            }
+        },
+        methods: {
+            handleUser() {
+                console.log('修改个人信息');
+                this.dialogFormVisible = true;            
+            },
+            handleSkill() {
+                console.log('修改个人技能')
+            },
+            handleSubmit() {
+                console.log('提交个人信息')
             }
         }
     }

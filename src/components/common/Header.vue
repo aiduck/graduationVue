@@ -39,12 +39,12 @@
             return {
                 collapse: false,
                 fullscreen: false,
-                name: 'admin默认',
+                name: 'admin',
             }
         },
         computed:{
             username(){
-                let username = localStorage.getItem('ms_username');
+                let username = this.$store.state.user.username;
                 return username ? username : this.name;
             }
         },

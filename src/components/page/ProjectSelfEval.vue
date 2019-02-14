@@ -72,7 +72,7 @@
                             size="small"
                             type="success"
                             @click="handleEdit(scope.$index, scope.row)">
-                            '编辑'
+                            编辑
                         </el-button>
                         <el-button
                             v-if="scope.row.isShowEditBtn"

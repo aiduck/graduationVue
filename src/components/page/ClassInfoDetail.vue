@@ -17,7 +17,7 @@
                     <el-row>
                         <el-col :span="12">
                             <el-form-item label="班级ID">
-                                <el-input v-model="form._class.class_id" :disabled="ischeck"></el-input>
+                                <el-input v-model="form._class.class_id" disabled></el-input>
                             </el-form-item>
                         </el-col>
                         <el-col :span="12">
@@ -34,7 +34,7 @@
                         </el-col>
                         <el-col :span="12">
                             <el-form-item label="教师ID">
-                                <el-input v-model="form._class.user_id" :disabled="ischeck" @change="handleTeacherChange(form._class.user_id)"></el-input>
+                                <el-input v-model="form._class.user_id" :disabled="!(checkAdmin === 1)" @change="handleTeacherChange(form._class.user_id)"></el-input>
                             </el-form-item>
                         </el-col>
                     </el-row>
@@ -44,11 +44,11 @@
                                 <el-input v-model="form._class.status" disabled></el-input>
                             </el-form-item>
                         </el-col>
-                        <el-col :span="12">
+                        <!-- <el-col :span="12">
                             <el-form-item label="状态">
                                 <el-button type="danger" :disabled="ischeck" @click="handleDelete">{{ form._class.status == '可用' ? '禁用' : '启用'}}</el-button>
                             </el-form-item>
-                        </el-col>
+                        </el-col> -->
                     </el-row>
                     <div class="form-hr">
                         <span class="form-tip">课程信息</span>
@@ -153,7 +153,7 @@
                     <el-form-item class="footSubmit" size="medium" v-if="!ischeck">
                         <el-button type="primary" @click="onSubmit">确认修改</el-button>
                     </el-form-item>
-                    <el-form-item class="footSubmit" size="medium" v-else>
+                    <el-form-item class="footSubmit" size="medium" v-if="ischeck && !isstudent">
                         <el-button type="primary" @click="leaveFor">前往编辑</el-button>
                     </el-form-item>
                 </el-form>
@@ -203,6 +203,29 @@ export default {
             isMajorSelect: true,
             isAdclassSelect: true,
             ischeck: false,
+        }
+    },
+    computed: {
+        isstudent() {
+            return this.$store.state.user.usertype === '学生';
+        },
+        isAdmin() {
+            return this.$store.state.user.usertype === '管理员';
+        },
+        checkAdmin() {
+            // 是编辑状态
+            if(!this.ischeck) {
+                // 并且是管理员身份
+                if(this.isAdmin) {
+                    return 1; // 是管理员在编辑
+                } else if(this.isstudent){
+                    return 2; // 是学生在编辑
+                } else {
+                    return 3;// 是教师在编辑
+                }
+            } else {
+                return 0; // 在查看
+            }
         }
     },
     mounted() {
@@ -331,34 +354,34 @@ export default {
             this.$router.push(`/classInfo/${this.$route.params.classId}/isedit`);
         },
         // 修改状态
-        handleDelete() {
-            let status = this.form._class.status === '可用' ? '不可用' : '可用';
-            let classId = this.$route.params.classId;
-            let params = {
-                status: status,
-                class_id: classId
-            }
-            axios
-            .post('/api/classInfo/updateClassStatus', params)
-            .then(res => {
-                if(res.data.code === 200) {
-                    // console.log(res)
-                    // 前端修改用户状态
-                    this.form._class.status = this.form._class.status === '可用' ? '不可用' : '可用';
-                } else {
-                    this.$message({
-                        type: 'warning',
-                        message: `数据库操作失败错误代码${res.data.code}`
-                    });
-                }
-            }) 
-            .catch(err => {
-                this.$message({
-                    message: `链接发生错误`,
-                    type: 'error'
-                });
-            })
-        }
+        // handleDelete() {
+        //     let status = this.form._class.status === '可用' ? '不可用' : '可用';
+        //     let classId = this.$route.params.classId;
+        //     let params = {
+        //         status: status,
+        //         class_id: classId
+        //     }
+        //     axios
+        //     .post('/api/classInfo/updateClassStatus', params)
+        //     .then(res => {
+        //         if(res.data.code === 200) {
+        //             // console.log(res)
+        //             // 前端修改用户状态
+        //             this.form._class.status = this.form._class.status === '可用' ? '不可用' : '可用';
+        //         } else {
+        //             this.$message({
+        //                 type: 'warning',
+        //                 message: `数据库操作失败错误代码${res.data.code}`
+        //             });
+        //         }
+        //     }) 
+        //     .catch(err => {
+        //         this.$message({
+        //             message: `链接发生错误`,
+        //             type: 'error'
+        //         });
+        //     })
+        // }
     }
 }
 </script>

@@ -17,6 +17,11 @@ import 'nprogress/nprogress.css'
 const whiteList = [
   'login'
 ]
+const blackList = [
+  'classDetail',
+  'projectDetail',
+  'projectScoreDetail'
+]
 
 Vue.use(ElementUI, { size: 'small' });
 Vue.prototype.$axios = axios;
@@ -45,7 +50,26 @@ router.beforeEach((to, from, next) => {
       // 这边就是路由自动处理
       // 如果有路由就进入自动的路由内容
       // 如果没有路由，那么直接进入404
-      next()
+      // 这边学生有些编辑内容的路由的限制
+      if(store.state.user.usertype === '学生') {
+        if(blackList.indexOf(to.name) !== -1) {
+          if(to.params.isCheck !== 'ischeck'){
+            ElementUI.Notification.error({
+              title: '非法路由',
+              message: '请重新登录'
+            })
+            next({ name: 'login' }) // 其他全部重定向到登录页
+          } else {
+            next()
+          }
+        } else {
+          next()
+        }
+
+      } else {
+        next()
+      }
+
       // 获取路由列表成功，判断输入的路由是否是在我们获取的路由(这边因为我们已经写了路由规则所以不需要自己在筛选跳转的)
       // if(store.getters.routeList.find(v => v.path === '/').children) {
       //   let routeArray = store.getters.routeList.find(v => v.path === '/').children;

@@ -21,10 +21,10 @@
                     <!-- 导出 -->
                     <a id="downlink"></a> 
                     <div class="handle-box">
-                        <el-button type="warning"  @click="handleDelAll">批量删除</el-button>
-                        <el-button type="success"  @click="uploadFile">导入</el-button>
-                        <el-button type="success"  @click="downloadFile" >导出</el-button>
-                        <el-button type="primary"  @click="handleAdd">添加</el-button>
+                        <!-- <el-button type="warning"  @click="handleDelAll">批量删除</el-button> -->
+                        <el-button v-if="!isstudent" type="success"  @click="uploadFile">导入</el-button>
+                        <el-button v-if="!isstudent" type="success"  @click="downloadFile" >导出</el-button>
+                        <el-button v-if="!isstudent" type="primary"  @click="handleAdd">添加</el-button>
                         <el-button type="primary"  @click="enterFilter">{{ isFilterIng ? '退出筛选' : '筛选'}}</el-button>
                     </div>
                 </el-col>
@@ -64,7 +64,7 @@
                        :resizable="false">
                 </el-table-column>
 
-                <el-table-column label="操作" width="300">
+                <el-table-column label="操作" width="240">
                     <template slot-scope="scope">
                         <el-button
                             size="small"
@@ -74,10 +74,10 @@
                             size="small"
                             type="success"
                             @click="handleEdit(scope.$index, scope.row)">查看班级</el-button>
-                        <el-button
+                        <!-- <el-button
                             size="small"
                             type="danger"
-                            @click="handleDelete(scope.$index, scope.row)">删除</el-button>
+                            @click="handleDelete(scope.$index, scope.row)">删除</el-button> -->
                     </template>
                 </el-table-column>
             </el-table>
@@ -119,6 +119,7 @@ export default {
                 username: "用户姓名",
                 class_id: "班级ID",
                 class_name: "班级名称",
+                class_status: "所在班级学生状态"
             },
             // 表格页码参数
             pageSize: 10, //每页大小
@@ -132,7 +133,7 @@ export default {
             isMjorSelect: false,
             isAdclassSelect: false,
             valueLabelMap:{
-               
+               class_id: []
             },
             filterTmpl: {
                 user_id: {
@@ -145,7 +146,7 @@ export default {
                 },
                 class_id: {
                     label: "班级ID",
-                    inputType: 0 // 0 代表 input
+                    inputType: 1 // 0 代表 input
                 },
                 class_name: {
                     label: "班级名称",
@@ -172,7 +173,7 @@ export default {
                 },
                 class_id: {
                     label: "班级ID",
-                    inputType: 0 // 0 代表 input
+                    inputType: 1 // 0 代表 input
                 },
                 class_name: {
                     label: "班级名称",
@@ -202,7 +203,10 @@ export default {
         // 是否显示退出筛选
         isFilterIng() {
             return !this.tagEmpty;
-        }
+        },
+        isstudent() {
+            return this.$store.state.user.usertype === '学生';
+        },
     },
     watch: {
         // 控制‘筛选条件字样’是否显示
@@ -224,6 +228,7 @@ export default {
         this.imFile = document.getElementById('imFile');
         this.outFile = document.getElementById('downlink')
         this.initUserInfo(this.pageSize, this.currentPage);
+        this.initClassID();
     },
     methods: {
         // 初始化用户信息
@@ -257,52 +262,80 @@ export default {
                 });
             })
         },
-        // 批量删除按钮
-        handleDelAll() {
-            if(this.multipleSelection.length > 0) {
-                this.$confirm('此操作将永久删除这些用户, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    let classIdList = [];
-                    this.multipleSelection.map((item, index) => {
-                        classIdList.push(item.id);
-                    })
-                    let params = {
-                        classIdList: classIdList
-                    }
-                    axios
-                    .post('api/classInfo/daleteClassMemeberList', params)
-                    .then(res => {
-                        if(res.data.code === 200) {
-                            this.initUserInfo(this.pageSize, this.currentPage);
-                            this.$message({
-                                type: 'success',
-                                message: '删除成功!'
-                            });
-                        }  else {
-                            this.$message({
-                                type: 'warning',
-                                message: `数据库操作失败错误代码${res.data.code}`
-                            });
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        this.$message({
-                            type: 'error',
-                            message: '删除失败！'
-                        }); 
-                    })
-                }).catch(() => {
+        initClassID() {
+            axios
+            .get("/api/classInfo/queryAll")
+            .then(res => {
+                if(res.data.code === 200) {
+                    this.valueLabelMap.class_id = []
+                    res.data.data.classList.map(item => {
+                        this.valueLabelMap.class_id.push({
+                            value: item.class_id,
+                            label: item.class_id,
+                            disable: item.status === '可用' ? false : true,
+                        })
+                    });
+                } else {
                     this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });          
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
                 });
-            }
+            })
         },
+        // 批量删除按钮
+        // handleDelAll() {
+        //     if(this.multipleSelection.length > 0) {
+        //         this.$confirm('此操作将永久删除这些用户, 是否继续?', '提示', {
+        //             confirmButtonText: '确定',
+        //             cancelButtonText: '取消',
+        //             type: 'warning'
+        //         }).then(() => {
+        //             let classIdList = [];
+        //             this.multipleSelection.map((item, index) => {
+        //                 classIdList.push(item.id);
+        //             })
+        //             let params = {
+        //                 classIdList: classIdList
+        //             }
+        //             axios
+        //             .post('api/classInfo/daleteClassMemeberList', params)
+        //             .then(res => {
+        //                 if(res.data.code === 200) {
+        //                     this.initUserInfo(this.pageSize, this.currentPage);
+        //                     this.$message({
+        //                         type: 'success',
+        //                         message: '删除成功!'
+        //                     });
+        //                 }  else {
+        //                     this.$message({
+        //                         type: 'warning',
+        //                         message: `数据库操作失败错误代码${res.data.code}`
+        //                     });
+        //                 }
+        //             })
+        //             .catch(err => {
+        //                 console.log(err);
+        //                 this.$message({
+        //                     type: 'error',
+        //                     message: '删除失败！'
+        //                 }); 
+        //             })
+        //         }).catch(() => {
+        //             this.$message({
+        //                 type: 'info',
+        //                 message: '已取消删除'
+        //             });          
+        //         });
+        //     }
+        // },
         // 导入
         uploadFile() {
             this.imFile.click()
@@ -683,37 +716,37 @@ export default {
             this.$router.push(`/classInfo/${row.class_id}/ischeck`);
         },
         // 删除按钮
-        handleDelete(index, row) {
-            let classIdList = [];
-            classIdList.push(row.id);
-            let params = {
-                classIdList: classIdList
-            }
-            axios
-            .post('api/classInfo/daleteClassMemeberList', params)
-            .then(res => {
-                if(res.data.code === 200) {
-                    this.initUserInfo(this.pageSize, this.currentPage);
-                    this.$message({
-                        type: 'success',
-                        message: '删除成功!'
-                    });
-                }  else {
-                    this.$message({
-                        type: 'warning',
-                        message: `数据库操作失败错误代码${res.data.code}`
-                    });
-                }
-            })
-            .catch(err => {
-                console.log(err);
-                this.$message({
-                    type: 'error',
-                    message: '删除失败！'
-                }); 
-            })
+        // handleDelete(index, row) {
+        //     let classIdList = [];
+        //     classIdList.push(row.id);
+        //     let params = {
+        //         classIdList: classIdList
+        //     }
+        //     axios
+        //     .post('api/classInfo/daleteClassMemeberList', params)
+        //     .then(res => {
+        //         if(res.data.code === 200) {
+        //             this.initUserInfo(this.pageSize, this.currentPage);
+        //             this.$message({
+        //                 type: 'success',
+        //                 message: '删除成功!'
+        //             });
+        //         }  else {
+        //             this.$message({
+        //                 type: 'warning',
+        //                 message: `数据库操作失败错误代码${res.data.code}`
+        //             });
+        //         }
+        //     })
+        //     .catch(err => {
+        //         console.log(err);
+        //         this.$message({
+        //             type: 'error',
+        //             message: '删除失败！'
+        //         }); 
+        //     })
 
-        },
+        // },
         // 分页操作按钮
         handleCurrentChange(val) {
             let currentPage = val;

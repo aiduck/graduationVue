@@ -53,10 +53,10 @@ export default {
                         })
                         this.$router.push('/');
                     }).catch(error => {
-                        this.$notify.error({
-                            title: '登录失败',
-                            message: '用户名或者密码错误'
-                        })
+                        // this.$notify.error({
+                        //     title: '登录失败',
+                        //     message: '用户名或者密码错误'
+                        // })
                         console.log(error);
                     });
                 } else {

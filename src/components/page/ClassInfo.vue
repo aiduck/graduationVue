@@ -16,8 +16,8 @@
                 </el-col>
                 <el-col :span="16">
                     <div class="handle-box">
-                        <el-button type="warning"  @click="handleDelAll">批量删除</el-button>
-                        <el-button type="primary"  @click="handleAdd">添加</el-button>
+                        <!-- <el-button type="warning"  @click="handleDelAll">批量删除</el-button> -->
+                        <el-button  v-if="!isstudent" type="primary"  @click="handleAdd">添加</el-button>
                         <el-button type="primary"  @click="enterFilter">{{ isFilterIng ? '退出筛选' : '筛选'}}</el-button>
                     </div>
                 </el-col>
@@ -58,7 +58,7 @@
                     </template>
                 </el-table-column> -->
 
-                <el-table-column type="selection" width="35"></el-table-column>
+                <el-table-column type="index" width="50"></el-table-column>
 
                 <el-table-column v-for="(value, key) in keyFormatMap"
                        :label="value"
@@ -67,20 +67,21 @@
                        :resizable="false">
                 </el-table-column>
 
-                <el-table-column label="操作" width="240">
+                <el-table-column label="操作" width="180">
                     <template slot-scope="scope">
                         <el-button
                             size="small"
                             type="primary"
                             @click="handleMore(scope.$index, scope.row)">更多</el-button>
                         <el-button
+                            v-if="!isstudent"
                             size="small"
                             type="success"
                             @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                        <el-button
+                        <!-- <el-button
                             size="small"
                             type="danger"
-                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status == '可用' ? '禁用' : '启用'}}</el-button>
+                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status == '可用' ? '禁用' : '启用'}}</el-button> -->
                     </template>
                 </el-table-column>
             </el-table>
@@ -118,7 +119,7 @@ export default {
                 class_name: "班级名称",
                 course_id: "课程ID",
                 user_id: "教师ID",
-                status: "课程状态"
+                status: "班级状态"
             },
             expandFormatMap: {
                 // 格式化额外信息映射表
@@ -143,6 +144,8 @@ export default {
             tagEmpty: true, //筛选标签是否为空
             showFilterBox: false,
             valueLabelMap:{
+                user_id: [],
+                course_id: [],
                 status: [
                     {
                         value: "可用",
@@ -197,11 +200,11 @@ export default {
                 },
                 course_id: {
                     label: "课程ID",
-                    inputType: 0,
+                    inputType: 1,
                 },
                 user_id: {
                     label: "教师ID",
-                    inputType: 0,
+                    inputType: 1,
                 },
                 status: {
                     label: "状态",
@@ -231,6 +234,9 @@ export default {
 
     },
     computed: {
+        isstudent() {
+            return this.$store.state.user.usertype === '学生';
+        },
         // 是否显示退出筛选
         isFilterIng() {
             return !this.tagEmpty;
@@ -257,6 +263,8 @@ export default {
         this.imFile = document.getElementById('imFile');
         this.outFile = document.getElementById('downlink')
         this.initClassInfo(this.pageSize, this.currentPage);
+        this.initCourse();
+        this.initUserId();
     },
     methods: {
         // 初始化信息
@@ -264,6 +272,8 @@ export default {
             let params = {
                 pageSize: pageSize,
                 currentPage: currentPage,
+                user_id: this.$store.state.user.user_id,
+                usertype: this.$store.state.user.usertype,
             }
             axios
             .get('/api/classInfo/queryLimitClass',{params})
@@ -288,56 +298,137 @@ export default {
                 });
             })
         },
-        // 批量删除按钮
-        handleDelAll() {
-            if(this.multipleSelection.length > 0) {
-                this.$confirm('此操作将永久删除这些用户, 是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    type: 'warning'
-                }).then(() => {
-                    let classIdList = [];
-                    this.multipleSelection.map((item, index) => {
-                        // console.log(item);
-                        classIdList.push(item.class_id);
-                    })
-                    let params = {
-                        classIdList: classIdList
+        // 初始化添加教师ID列表的信息
+        initUserId() {         
+            this.valueLabelMap.user_id = [];
+            axios
+            .get('/api/teacherInfo/queryAllTeaId')
+            .then(res => {
+                if(res.data.code === 200) {
+                    if(res.data.data.user) {
+                        res.data.data.user.map((item) => {
+                            this.valueLabelMap.user_id.push({
+                                value: item.user_id,
+                                label: item.user_id,
+                                disabled: item.status === '可用'?false:true
+                            })
+                        })
                     }
-                    // console.log(params);
-                    axios
-                    .post('api/classInfo/daleteClassList', params)
-                    .then(res => {
-                        if(res.data.code === 200) {
-                            this.initClassInfo(this.pageSize, this.currentPage);
-                            this.$message({
-                                type: 'success',
-                                message: '删除成功!'
-                            });
-                        } else {
-                            this.$message({
-                                type: 'warning',
-                                message: `数据库操作失败错误代码${res.data.code}`
-                            });
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err);
-                        this.$message({
-                            type: 'error',
-                            message: '删除失败！'
-                        }); 
-                    })
-                }).catch(() => {
+                } else {
                     this.$message({
-                        type: 'info',
-                        message: '已取消删除'
-                    });          
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
                 });
-            }
+            })
         },
+        // 初始化添加课程ID列表的信息
+        initCourse() {
+            this.valueLabelMap.course_id = [];
+            axios
+            .get('/api/courseInfo/queryAll')
+            .then(res => {
+
+                if(res.data.code === 200) {
+                    if(res.data.data.courseList) {
+                        res.data.data.courseList.map((item) => {
+                            this.valueLabelMap.course_id.push({
+                                value: item.course_id,
+                                label: item.course_id,
+                                disabled: item.status === '可用'?false:true
+                            })
+                        })
+                    }
+                    // this.valueLabelMap.course_id = res.data.data.courseList || []
+                } else {
+                    this.$message({
+                        type: 'warning',
+                        message: `数据库操作失败错误代码${res.data.code}`
+                    });
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                this.$message({
+                    message: `链接发生错误`,
+                    type: 'error'
+                });
+            })
+        },
+        // 批量删除按钮
+        // handleDelAll() {
+        //     if(this.multipleSelection.length > 0) {
+        //         this.$confirm('此操作将永久删除这些用户, 是否继续?', '提示', {
+        //             confirmButtonText: '确定',
+        //             cancelButtonText: '取消',
+        //             type: 'warning'
+        //         }).then(() => {
+        //             let classIdList = [];
+        //             this.multipleSelection.map((item, index) => {
+        //                 // console.log(item);
+        //                 classIdList.push(item.class_id);
+        //             })
+        //             let params = {
+        //                 classIdList: classIdList
+        //             }
+        //             // console.log(params);
+        //             axios
+        //             .post('api/classInfo/daleteClassList', params)
+        //             .then(res => {
+        //                 if(res.data.code === 200) {
+        //                     this.initClassInfo(this.pageSize, this.currentPage);
+        //                     this.$message({
+        //                         type: 'success',
+        //                         message: '删除成功!'
+        //                     });
+        //                 } else {
+        //                     this.$message({
+        //                         type: 'warning',
+        //                         message: `数据库操作失败错误代码${res.data.code}`
+        //                     });
+        //                 }
+        //             })
+        //             .catch(err => {
+        //                 console.log(err);
+        //                 this.$message({
+        //                     type: 'error',
+        //                     message: '删除失败！'
+        //                 }); 
+        //             })
+        //         }).catch(() => {
+        //             this.$message({
+        //                 type: 'info',
+        //                 message: '已取消删除'
+        //             });          
+        //         });
+        //     }
+        // },
         // 单个添加按钮
         handleAdd() {
+            // 如果是教师，只能查找自己的班级信息
+            if(this.$store.state.user.usertype === '教师') {
+                // this.valueLabelMap.user_id = []
+                // this.valueLabelMap.user_id.push({
+                //     value: this.$store.state.user.user_id,
+                //     label: this.$store.state.user.user_id,
+                // })
+                delete this.infoAddTmpl.user_id
+                this.infoAddTmpl = {
+                    ...this.infoAddTmpl,
+                    user_id: {
+                        label: "教师ID",
+                        inputType: 0.2 // 0 代表 input
+                    }
+                }
+                this.valueLabelMap.user_id  = this.$store.state.user.user_id;
+            }
             this.showInfoAdd = true;
         },
         insertClass(addform) {
@@ -391,7 +482,13 @@ export default {
                                     课程ID是否为${addform.course_id}:${course_name}`, '内容确认', {
                                         confirmButtonText: '确定',
                                         callback: action => {
-                                           this.insertClass(addform);
+                                            if(action === 'cancel') {
+                                                this.$message('取消添加');
+                                            } else if(action === 'confirm'){
+                                                this.insertClass(addform);
+                                            }
+                                            console.log(action)
+                                           
                                         }
                                     });
                                 } else {
@@ -432,6 +529,14 @@ export default {
         },
         // 搜索按钮相关函数
         enterFilter() {
+            if(this.$store.state.user.usertype === '教师') {
+                // this.valueLabelMap.user_id = []
+                // this.valueLabelMap.user_id.push({
+                //     value: this.$store.state.user.user_id,
+                //     label: this.$store.state.user.user_id,
+                // })
+                delete this.filterTmpl.user_id
+            }
             this.isFirstFilter = true;
             if(this.isFilterIng) {
                 console.log('退出筛选');
@@ -536,36 +641,54 @@ export default {
         handleEdit(index, row) {
             this.$router.push(`/classInfo/${row.class_id}/isedit`);
         },
-        // 禁用按钮
-        handleDelete(index, row) {
-            let status = row.status === '可用' ? '不可用' : '可用';
-            let class_id = row.class_id;
-            let params = {
-                status: status,
-                class_id: class_id
-            }
-            axios
-            .post('/api/classInfo/updateClassStatus', params)
-            .then(res => {
-                if(res.data.code === 200) {
-                    // console.log(res)
-                    // 前端修改用户状态
-                    this.tableData[index].status = row.status === '可用' ? '不可用' : '可用';
-                } else {
-                    this.$message({
-                        type: 'warning',
-                        message: `数据库操作失败错误代码${res.data.code}`
-                    });
-                } 
-            })
-            .catch(err => {
-                this.$message({
-                    message: `链接发生错误`,
-                    type: 'error'
-                });
-            })
-
-        },
+        // 禁用按钮的第二次提醒
+        // updateStatue(index,row) {
+        //     let status = row.status === '可用' ? '不可用' : '可用';
+        //     let class_id = row.class_id;
+        //     let params = {
+        //         status: status,
+        //         class_id: class_id
+        //     }
+        //     axios
+        //     .post('/api/classInfo/updateClassStatus', params)
+        //     .then(res => {
+        //         if(res.data.code === 200) {
+        //             this.tableData[index].status = row.status === '可用' ? '不可用' : '可用';
+        //         } else {
+        //             this.$message({
+        //                 type: 'warning',
+        //                 message: `数据库操作失败错误代码${res.data.code}`
+        //             });
+        //         } 
+        //     })
+        //     .catch(err => {
+        //         console.log(err);
+        //         this.$message({
+        //             message: `链接发生错误`,
+        //             type: 'error'
+        //         });
+        //     })
+        // },
+        // // 禁用按钮
+        // handleDelete(index, row) {
+        //     if(row.status === '可用') {
+        //         this.$confirm('检查该班级中的项目是否全部截止？', '提示', {
+        //             confirmButtonText: '继续禁用',
+        //             cancelButtonText: '取消禁用',
+        //             type: 'warning'
+        //         }).then(() => {
+        //             this.updateStatue(index,row);
+        //         }).catch(() => {
+        //             this.$message({
+        //                 type: 'info',
+        //                 message: '已取消禁用'
+        //             });          
+        //         });
+        //     } else {
+        //         this.updateStatue(index,row);
+                
+        //     }
+        // },
         // 分页操作按钮
         handleCurrentChange(val) {
             console.log(`当前页: ${val}`);

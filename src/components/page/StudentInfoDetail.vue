@@ -117,7 +117,7 @@
                     <el-form-item class="footSubmit" size="medium" v-if="!ischeck">
                         <el-button type="primary" @click="onSubmit">确认修改</el-button>
                     </el-form-item>
-                    <el-form-item class="footSubmit" size="medium" v-else>
+                    <el-form-item class="footSubmit" size="medium" v-if="ischeck && isadmin">
                         <el-button type="primary" @click="leaveFor">前往编辑</el-button>
                     </el-form-item>
                 </el-form>
@@ -151,6 +151,11 @@ export default {
             isAdclassSelect: true,
             ischeck: false,
         }
+    },
+    computed: {
+        isadmin() {
+            return this.$store.state.user.usertype === '管理员';
+        },
     },
     mounted() {
         this.ischeck = this.$route.params.isCheck === 'ischeck' ? true :false;
